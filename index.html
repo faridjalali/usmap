@@ -302,7 +302,7 @@
                 const wrongName = gameData[clickedAbbr] ? gameData[clickedAbbr].name : "unknown territory";
                 // Orange highlight without underline
                 const targetName = gameData[currentTargetAbbr].name;
-                updatePrompt(`Find ${targetName}.`, `That is <span class="wrong-state-highlight">${wrongName}</span>.`);
+                updatePrompt(`Find ${targetName}`, `That is <span class="wrong-state-highlight">${wrongName}</span>`);
             }
         }
 
