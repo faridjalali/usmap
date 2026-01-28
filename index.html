@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>US GeoMaster | Refined Edition</title>
+    <title>US GeoMaster | Strategic Highlight Edition</title>
     
     <link rel="icon" href="icon_0.jpg" type="image/jpeg">
 
@@ -57,10 +57,10 @@
         .city-node {
             fill: var(--neon-blue);
             stroke: rgba(0, 243, 255, 0.25);
-            stroke-width: 5px; /* Reduced by 50% */
+            stroke-width: 5px; 
             cursor: pointer;
             transition: all 0.3s ease;
-            pointer-events: none; /* Controlled via JS to prevent mobile auto-tap */
+            pointer-events: none; 
         }
 
         .city-node:hover { fill: #fff; stroke: var(--neon-blue); stroke-width: 8px; }
@@ -81,7 +81,14 @@
 
         #prompt-container { position: absolute; top: 15%; width: 100%; text-align: center; text-shadow: 0 5px 20px black; }
         #main-prompt { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0; transition: all 0.4s; }
-        #sub-prompt { font-size: 1rem; color: var(--neon-blue); margin-top: 5px; letter-spacing: 1px; }
+        #sub-prompt { font-size: 1.1rem; color: var(--neon-blue); margin-top: 8px; letter-spacing: 1px; line-height: 1.4; }
+
+        /* The Orange Highlight Style */
+        .wrong-state-highlight {
+            color: var(--neon-amber);
+            text-decoration: underline;
+            font-weight: 800;
+        }
 
         #city-tooltip {
             position: absolute; background: rgba(0,0,0,0.9); border: 1px solid var(--neon-blue);
@@ -147,7 +154,6 @@
     </div>
 
     <script>
-        // Full Dataset
         const gameData = {
             "AL": { name: "Alabama", capital: "Montgomery", cities: { "Montgomery": [-86.3077, 32.3792], "Birmingham": [-86.8104, 33.5186], "Mobile": [-88.0399, 30.6954], "Huntsville": [-86.5861, 34.7304], "Tuscaloosa": [-87.5692, 33.2098] }, facts: { "Montgomery": "Capital since 1846, it was the first capital of the Confederacy.", "Birmingham": "The 'Pittsburgh of the South' due to its massive iron and steel industry.", "Mobile": "The only saltwater port in Alabama and the site of the first US Mardi Gras.", "Huntsville": "The 'Rocket City' where NASA developed the Saturn V rockets.", "Tuscaloosa": "Named after Chief Tuskaloosa, it is the home of the University of Alabama." } },
             "AK": { name: "Alaska", capital: "Juneau", cities: { "Juneau": [-134.4197, 58.3019], "Anchorage": [-149.9003, 61.2181], "Fairbanks": [-147.7164, 64.8378], "Sitka": [-135.3300, 57.0531], "Ketchikan": [-131.6461, 55.3422] }, facts: { "Juneau": "No roads connect this capital to the rest of the state; you must arrive by air or sea.", "Anchorage": "Nearly 40% of Alaska's population lives in this city.", "Fairbanks": "Known as the Golden Heart City, it's one of the best spots to view the Northern Lights.", "Sitka": "It was the capital of Russian America before Alaska was sold to the US.", "Ketchikan": "The 'Salmon Capital of the World' and home to the world's largest collection of totem poles." } },
@@ -193,7 +199,7 @@
             "TN": { name: "Tennessee", capital: "Nashville", cities: { "Nashville": [-86.7816, 36.1627], "Memphis": [-90.0490, 35.1495], "Knoxville": [-83.9207, 35.9606], "Chattanooga": [-85.2666, 35.0456], "Clarksville": [-87.3581, 36.5298] }, facts: { "Nashville": "Known as the 'Athens of the South' and the center of country music.", "Memphis": "The home of Elvis Presley's Graceland and world-famous barbecue.", "Knoxville": "The site of the 1982 World's Fair, known for the Sunsphere.", "Chattanooga": "The first city in the US to have a city-wide gigabit internet network.", "Clarksville": "The home of Fort Campbell and the 101st Airborne Division." } },
             "TX": { name: "Texas", capital: "Austin", cities: { "Austin": [-97.7431, 30.2672], "Houston": [-95.3698, 29.7604], "Dallas": [-96.7970, 32.7767], "San Antonio": [-98.4936, 29.4241], "El Paso": [-106.4850, 31.7619] }, facts: { "Austin": "The Live Music Capital of the World and home to the massive UT campus.", "Houston": "The most diverse city in America with over 145 different languages spoken.", "Dallas": "The city where the frozen margarita machine was invented.", "San Antonio": "The home of the Alamo and the world-famous River Walk.", "El Paso": "The 'Sun City' located at the junction of two countries and three states." } },
             "UT": { name: "Utah", capital: "Salt Lake City", cities: { "Salt Lake City": [-111.8910, 40.7608], "West Valley City": [-112.0011, 40.6916], "Provo": [-111.6585, 40.2338], "West Jordan": [-111.9391, 40.6097], "Orem": [-111.6946, 40.2969] }, facts: { "Salt Lake City": "Hosted the 2002 Winter Olympics and is the global HQ for the LDS church.", "West Valley City": "The second-largest city in Utah, known for the Maverik Center.", "Provo": "Home to Brigham Young University (BYU).", "West Jordan": "One of the fastest-growing cities in Utah, located in the Salt Lake Valley.", "Orem": "Known as 'Family City USA'." } },
-            "VT": { name: "Vermont", capital: "Montpelier", cities: { "Montpelier": [-72.5778, 44.2601], "Burlington": [-73.2121, 44.4759], "Rutland": [-72.9726, 43.6106], "Barre": [-72.5012, 44.1970], "Winooski": [-73.1823, 44.4909] }, facts: { "Montpelier": "The least populous state capital in the US (under 8,000 residents).", "Burlington": "The first US city to run entirely on renewable energy.", "Rutland": "Famous for its 'Halloween Parade' and historical marble quarries.", "Barre": "The 'Granite Capital of the World'.", "Winooski": "Known as the 'Onion City' from an Abenaki word." } },
+            "VT": { name: "Vermont", capital: "Montpelier", cities: { "Montpelier": [-72.5778, 44.2601], "Burlington": [-73.2121, 44.4759], "Rutland": [-72.9726, 43.6106], "Barre": [-72.5012, 44.1970], "Winooski": [-73.1823, 44.4909] }, facts: { "Montpelier": "The smallest state capital by population.", "Burlington": "Vermont's largest city, located on Lake Champlain.", "Rutland": "Famous for its 'Halloween Parade' and historical marble quarries.", "Barre": "The 'Granite Capital of the World'.", "Winooski": "Known as the 'Onion City' from an Abenaki word." } },
             "VA": { name: "Virginia", capital: "Richmond", cities: { "Richmond": [-77.4360, 37.5407], "Virginia Beach": [-75.9779, 36.8529], "Norfolk": [-76.2859, 36.8508], "Chesapeake": [-76.2875, 36.7682], "Arlington": [-77.1008, 38.8783] }, facts: { "Richmond": "The site of Patrick Henry's 'Give me liberty, or give me death!' speech.", "Virginia Beach": "The longest pleasure beach in the world according to Guinness Records.", "Norfolk": "Home to the world's largest naval station.", "Chesapeake": "Known for its massive Great Dismal Swamp National Wildlife Refuge.", "Arlington": "Technically a county, but functions as a city; home to the Pentagon." } },
             "WA": { name: "Washington", capital: "Olympia", cities: { "Olympia": [-122.9007, 47.0379], "Seattle": [-122.3321, 47.6062], "Spokane": [-117.4260, 47.6588], "Tacoma": [-122.4443, 47.2529], "Vancouver": [-122.6615, 45.6387] }, facts: { "Olympia": "Means 'Heavenly' and sits at the foot of the Olympic Mountains.", "Seattle": "The first US city to play a Beatles song on the radio.", "Spokane": "The birthplace of Father's Day (1910).", "Tacoma": "Known as the 'City of Destiny' and famous for its glass art (Dale Chihuly).", "Vancouver": "Not the Canadian one! This one was founded 29 years earlier." } },
             "WV": { name: "West Virginia", capital: "Charleston", cities: { "Charleston": [-81.6326, 38.3498], "Huntington": [-82.4451, 38.4193], "Morgantown": [-79.9559, 39.6295], "Parkersburg": [-81.5615, 39.2667], "Wheeling": [-80.7209, 40.0640] }, facts: { "Charleston": "The capitol dome is covered in real 23-karat gold leaf.", "Huntington": "The first US city to have electric streetcars.", "Morgantown": "Home to the PRT, a unique automated personal rapid transit system.", "Parkersburg": "Home to the Blennerhassett Island Historical State Park.", "Wheeling": "The first capital of West Virginia." } },
@@ -278,7 +284,7 @@
             } else {
                 flashState(this, "wrong");
                 const wrongName = gameData[clickedAbbr] ? gameData[clickedAbbr].name : "unknown territory";
-                updatePrompt("Negative", `That is ${wrongName}. Try again!`);
+                updatePrompt("Negative", `That is <span class="wrong-state-highlight">${wrongName}</span>. Try again!`);
             }
         }
 
@@ -289,7 +295,7 @@
             updatePrompt("Strategic Target", `Find the Capital of ${gameData[abbr].name}`);
             plotCities(abbr);
 
-            // FIX: Prevent accidental auto-selection on touch screens
+            // Prevent accidental auto-selection on touch screens
             setTimeout(() => {
                 d3.selectAll(".city-node").style("pointer-events", "auto");
             }, 800);
@@ -364,7 +370,7 @@
 
         function resetZoom() { svg.transition().duration(1000).call(zoom.transform, d3.zoomIdentity); }
         function flashState(el, type) { d3.select(el).classed(type+"-flash", true); setTimeout(() => d3.select(el).classed(type+"-flash", false), 500); }
-        function updatePrompt(m, s) { document.getElementById("main-prompt").innerText = m; document.getElementById("sub-prompt").innerText = s; }
+        function updatePrompt(m, s) { document.getElementById("main-prompt").innerHTML = m; document.getElementById("sub-prompt").innerHTML = s; }
     </script>
 </body>
 </html>
