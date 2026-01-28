@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>US GeoMaster | Tactical Map</title>
+    <title>US GeoMaster | Tactical Education Edition</title>
     
     <link rel="icon" href="icon_0.jpg" type="image/jpeg">
 
@@ -18,7 +18,8 @@
             --neon-blue: #00f3ff;
             --neon-pink: #ff0055;
             --neon-green: #00ff9d;
-            --glass: rgba(10, 10, 10, 0.85);
+            --neon-amber: #ffaa00;
+            --glass: rgba(10, 10, 10, 0.9);
             --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
@@ -31,14 +32,10 @@
             height: 100vh;
             width: 100vw;
             user-select: none;
+            touch-action: none;
         }
 
-        /* --- MAP LAYER --- */
-        #map-stage {
-            width: 100%;
-            height: 100%;
-            cursor: crosshair;
-        }
+        #map-stage { width: 100%; height: 100%; cursor: crosshair; }
 
         .state {
             fill: var(--map-base);
@@ -49,12 +46,7 @@
         }
 
         .state:hover { fill: #222; }
-
-        .state.active-focused {
-            fill: #1a1a1a;
-            stroke: #444;
-            stroke-width: 1px;
-        }
+        .state.active-focused { fill: #1a1a1a; stroke: #444; stroke-width: 1px; }
 
         .state.correct-flash { animation: flashSuccess 0.5s forwards; }
         .state.wrong-flash { animation: flashError 0.5s forwards; }
@@ -62,7 +54,6 @@
         @keyframes flashSuccess { 0% { fill: var(--neon-green); } 100% { fill: #1a1a1a; } }
         @keyframes flashError { 0% { fill: var(--neon-pink); } 100% { fill: var(--map-base); } }
 
-        /* --- CITY NODES (The Dots) --- */
         .city-node {
             fill: var(--neon-blue);
             stroke: rgba(0, 243, 255, 0.3);
@@ -71,278 +62,175 @@
             transition: all 0.3s ease;
         }
 
-        .city-node:hover {
-            fill: #fff;
-            stroke: var(--neon-blue);
-            stroke-width: 15px;
-        }
-
-        .city-node.wrong-choice { fill: var(--neon-pink); stroke: var(--neon-pink); }
+        .city-node:hover { fill: #fff; stroke: var(--neon-blue); stroke-width: 15px; }
+        .city-node.wrong-choice { fill: var(--neon-pink); stroke: var(--neon-pink); pointer-events: none; opacity: 0.6; }
         .city-node.correct-choice { fill: var(--neon-green); stroke: var(--neon-green); }
 
-        /* --- HUD UI --- */
-        #ui-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-        }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 
         #top-hud {
-            position: absolute;
-            top: 20px; left: 50%;
-            transform: translateX(-50%);
-            background: var(--glass);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 10px 30px;
-            border-radius: 50px;
-            display: flex;
-            gap: 20px;
-            backdrop-filter: blur(5px);
-            z-index: 10;
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--glass); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 30px; border-radius: 50px; display: flex; gap: 20px;
+            backdrop-filter: blur(10px); z-index: 10;
         }
 
-        .hud-item { font-size: 0.9rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        .hud-item { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
         .hud-val { color: var(--neon-blue); font-weight: bold; margin-left: 5px; }
 
-        /* Center Prompts */
-        #prompt-container {
-            position: absolute;
-            top: 15%; width: 100%;
-            text-align: center;
-            pointer-events: none;
-            text-shadow: 0 5px 20px black;
-        }
+        #prompt-container { position: absolute; top: 15%; width: 100%; text-align: center; text-shadow: 0 5px 20px black; }
+        #main-prompt { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0; transition: all 0.4s; }
+        #sub-prompt { font-size: 1rem; color: var(--neon-blue); margin-top: 5px; letter-spacing: 1px; }
 
-        #main-prompt {
-            font-size: 2.5rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            margin: 0;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.5s ease;
-        }
-        #main-prompt.visible { opacity: 1; transform: translateY(0); }
-        
-        #sub-prompt {
-            font-size: 1.1rem;
-            color: var(--neon-blue);
-            margin-top: 5px;
-            letter-spacing: 1px;
-        }
-
-        /* Tooltip for City Hover */
         #city-tooltip {
-            position: absolute;
-            background: rgba(0,0,0,0.9);
-            border: 1px solid var(--neon-blue);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            pointer-events: none;
-            opacity: 0;
-            transform: translate(-50%, -150%); /* Center above cursor */
-            white-space: nowrap;
-            z-index: 50;
-            transition: opacity 0.2s;
-            box-shadow: 0 0 15px var(--neon-blue);
+            position: absolute; background: rgba(0,0,0,0.9); border: 1px solid var(--neon-blue);
+            color: white; padding: 5px 12px; border-radius: 4px; font-size: 0.85rem;
+            pointer-events: none; opacity: 0; transform: translate(-50%, -150%);
+            white-space: nowrap; z-index: 50;
         }
 
-        /* Modal Overlay for Facts */
         #fact-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(8px);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(15px); z-index: 100; display: flex;
+            justify-content: center; align-items: center; opacity: 0;
+            pointer-events: none; transition: opacity 0.3s;
         }
         #fact-overlay.show { opacity: 1; pointer-events: auto; }
 
         .fact-card {
-            background: #111;
-            border: 1px solid var(--neon-blue);
-            border-radius: 12px;
-            padding: 40px;
-            max-width: 450px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 0 50px rgba(0, 243, 255, 0.1);
+            background: #111; border: 2px solid var(--neon-blue); border-radius: 20px;
+            padding: 40px; max-width: 480px; width: 90%; text-align: center;
+            box-shadow: 0 0 60px rgba(0, 243, 255, 0.2);
         }
 
-        .fact-status { font-weight: 800; letter-spacing: 2px; margin-bottom: 15px; font-size: 1.2rem; }
+        .fact-status { font-weight: 800; letter-spacing: 3px; margin-bottom: 10px; font-size: 1.1rem; text-transform: uppercase; }
         .status-correct { color: var(--neon-green); }
         .status-wrong { color: var(--neon-pink); }
+        .status-info { color: var(--neon-amber); }
         
-        .fact-city { font-size: 2rem; margin: 0 0 15px; color: white; }
-        .fact-body { color: #ccc; line-height: 1.6; margin-bottom: 25px; font-size: 1rem; }
+        .fact-city { font-size: 2.5rem; margin: 0 0 15px; color: white; font-weight: 900; }
+        .fact-body { color: #eee; line-height: 1.6; margin-bottom: 30px; font-size: 1.1rem; }
 
         .next-btn {
-            background: var(--neon-blue);
-            color: #000;
-            border: none;
-            padding: 12px 30px;
-            font-weight: 700;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 0 15px var(--neon-blue);
+            background: var(--neon-blue); color: #000; border: none;
+            padding: 15px 40px; font-weight: 800; border-radius: 40px;
+            cursor: pointer; text-transform: uppercase; transition: 0.2s;
         }
-        .next-btn:hover { transform: scale(1.05); background: white; }
-
-        /* Loader */
-        #loading {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%,-50%);
-            letter-spacing: 3px; font-size: 1.2rem;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse { 0% {opacity:0.5;} 50% {opacity:1;} 100% {opacity:0.5;} }
+        .next-btn:hover { background: white; transform: scale(1.05); }
 
     </style>
 </head>
 <body>
 
-    <div id="loading">INITIALIZING SATELLITE DATA...</div>
-
     <div id="city-tooltip">City Name</div>
-
     <div id="map-stage"></div>
 
     <div id="ui-layer">
         <div id="top-hud">
             <div><span class="hud-item">Target</span> <span id="target-state" class="hud-val">---</span></div>
+            <div><span class="hud-item">Strikes</span> <span id="strike-val" class="hud-val">0/3</span></div>
             <div><span class="hud-item">Score</span> <span id="score-val" class="hud-val">0</span></div>
         </div>
-
         <div id="prompt-container">
-            <h1 id="main-prompt" class="visible"></h1>
+            <h1 id="main-prompt">Initializing Satellite...</h1>
             <div id="sub-prompt"></div>
         </div>
     </div>
 
     <div id="fact-overlay">
         <div class="fact-card">
-            <div class="fact-status" id="fact-status">Correct</div>
+            <div class="fact-status" id="fact-status">Result</div>
             <div class="fact-city" id="fact-city-name">City</div>
-            <div class="fact-body" id="fact-text">Fact goes here.</div>
-            <button class="next-btn" onclick="resetGameRound()">Next Mission</button>
+            <div class="fact-body" id="fact-text">Fact</div>
+            <button class="next-btn" id="next-action-btn">Continue</button>
         </div>
     </div>
 
     <script>
-        // --- COMPLETE 50 STATE DATASET ---
         const gameData = {
-            "AL": { name: "Alabama", capital: "Montgomery", cities: { "Montgomery": [-86.3077, 32.3792], "Birmingham": [-86.8104, 33.5186], "Mobile": [-88.0399, 30.6954], "Huntsville": [-86.5861, 34.7304], "Tuscaloosa": [-87.5692, 33.2098] }, facts: { "Montgomery": "The birthplace of the Civil Rights Movement.", "Birmingham": "Founded at the crossing of two major railroads.", "Huntsville": "Home to the U.S. Space & Rocket Center." } },
-            "AK": { name: "Alaska", capital: "Juneau", cities: { "Juneau": [-134.4197, 58.3019], "Anchorage": [-149.9003, 61.2181], "Fairbanks": [-147.7164, 64.8378], "Sitka": [-135.3300, 57.0531], "Ketchikan": [-131.6461, 55.3422] }, facts: { "Juneau": "No roads connect Juneau to the rest of Alaska.", "Anchorage": "Contains nearly 40% of the state's population.", "Fairbanks": "Famous for the Aurora Borealis." } },
-            "AZ": { name: "Arizona", capital: "Phoenix", cities: { "Phoenix": [-112.0740, 33.4484], "Tucson": [-110.9747, 32.2226], "Mesa": [-111.8315, 33.4152], "Scottsdale": [-111.9261, 33.4942], "Flagstaff": [-111.6513, 35.1983] }, facts: { "Phoenix": "The most populous state capital in the US.", "Flagstaff": "A gateway to the San Francisco Peaks and Grand Canyon.", "Tucson": "Home to the University of Arizona." } },
-            "AR": { name: "Arkansas", capital: "Little Rock", cities: { "Little Rock": [-92.2896, 34.7465], "Fayetteville": [-94.1574, 36.0626], "Fort Smith": [-94.4229, 35.3859], "Springdale": [-94.1288, 36.1867], "Hot Springs": [-93.0552, 34.5037] }, facts: { "Little Rock": "Named for a small rock formation on the river.", "Hot Springs": "Childhood home of President Bill Clinton." } },
-            "CA": { name: "California", capital: "Sacramento", cities: { "Sacramento": [-121.4944, 38.5816], "Los Angeles": [-118.2437, 34.0522], "San Francisco": [-122.4194, 37.7749], "San Diego": [-117.1611, 32.7157], "Fresno": [-119.7871, 36.7378] }, facts: { "Sacramento": "Became the capital in 1854.", "San Francisco": "Famous for the Golden Gate Bridge and fog.", "Los Angeles": "The center of the nation's film industry." } },
-            "CO": { name: "Colorado", capital: "Denver", cities: { "Denver": [-104.9903, 39.7392], "Colorado Springs": [-104.8214, 38.8339], "Aurora": [-104.8319, 39.7294], "Fort Collins": [-105.0844, 40.5853], "Boulder": [-105.2705, 40.0150] }, facts: { "Denver": "Exactly one mile (5280 ft) above sea level.", "Colorado Springs": "Home to the US Air Force Academy." } },
-            "CT": { name: "Connecticut", capital: "Hartford", cities: { "Hartford": [-72.6734, 41.7658], "Bridgeport": [-73.1894, 41.1792], "New Haven": [-72.9279, 41.3083], "Stamford": [-73.5387, 41.0534], "Waterbury": [-73.0454, 41.5582] }, facts: { "Hartford": "Known as the Insurance Capital of the World.", "New Haven": "Home to Yale University." } },
-            "DE": { name: "Delaware", capital: "Dover", cities: { "Dover": [-75.5297, 39.1582], "Wilmington": [-75.5484, 39.7447], "Newark": [-75.7497, 39.6837], "Middletown": [-75.7163, 39.4496], "Rehoboth Beach": [-75.0760, 38.7209] }, facts: { "Dover": "Home to a major Air Force base and speedway.", "Wilmington": "A national hub for credit card companies." } },
-            "FL": { name: "Florida", capital: "Tallahassee", cities: { "Tallahassee": [-84.2807, 30.4383], "Miami": [-80.1918, 25.7617], "Orlando": [-81.3792, 28.5383], "Tampa": [-82.4572, 27.9506], "Jacksonville": [-81.6557, 30.3322] }, facts: { "Tallahassee": "Site of the first Christmas celebration in the US.", "Orlando": "Theme park capital of the world.", "Miami": "Known as the 'Magic City'." } },
-            "GA": { name: "Georgia", capital: "Atlanta", cities: { "Atlanta": [-84.3880, 33.7490], "Savannah": [-81.0998, 32.0809], "Augusta": [-81.9748, 33.4735], "Macon": [-83.6324, 32.8407], "Athens": [-83.3576, 33.9519] }, facts: { "Atlanta": "Hosted the 1996 Summer Olympics.", "Savannah": "Known for its historic city squares and weeping willows." } },
-            "HI": { name: "Hawaii", capital: "Honolulu", cities: { "Honolulu": [-157.8583, 21.3069], "Hilo": [-155.0844, 19.7297], "Kailua": [-157.7394, 21.4022], "Kahului": [-156.4729, 20.8893], "Lihue": [-159.3711, 21.9811] }, facts: { "Honolulu": "Home to Iolani Palace, the only royal palace in the US.", "Hilo": "Known for its waterfalls and rainforests." } },
-            "ID": { name: "Idaho", capital: "Boise", cities: { "Boise": [-116.2023, 43.6150], "Meridian": [-116.3915, 43.6121], "Nampa": [-116.5635, 43.5407], "Idaho Falls": [-112.0340, 43.4917], "Pocatello": [-112.4506, 42.8666] }, facts: { "Boise": "Called the 'City of Trees'.", "Idaho Falls": "Powered by a hydroelectric plant on the Snake River." } },
-            "IL": { name: "Illinois", capital: "Springfield", cities: { "Springfield": [-89.6501, 39.7817], "Chicago": [-87.6298, 41.8781], "Aurora": [-88.3156, 41.7606], "Rockford": [-89.0939, 42.2711], "Peoria": [-89.5890, 40.6936] }, facts: { "Springfield": "Abraham Lincoln lived here for 17 years.", "Chicago": "Invented the modern skyscraper." } },
-            "IN": { name: "Indiana", capital: "Indianapolis", cities: { "Indianapolis": [-86.1581, 39.7684], "Fort Wayne": [-85.1394, 41.0793], "Evansville": [-87.5711, 37.9716], "South Bend": [-86.2520, 41.6764], "Carmel": [-86.1180, 39.9784] }, facts: { "Indianapolis": "Home of the Indy 500.", "South Bend": "Home to the University of Notre Dame." } },
-            "IA": { name: "Iowa", capital: "Des Moines", cities: { "Des Moines": [-93.6091, 41.6005], "Cedar Rapids": [-91.6656, 41.9779], "Davenport": [-90.5776, 41.5236], "Sioux City": [-96.4103, 42.4999], "Iowa City": [-91.5302, 41.6611] }, facts: { "Des Moines": "A major hub for the insurance industry.", "Iowa City": "A UNESCO City of Literature." } },
-            "KS": { name: "Kansas", capital: "Topeka", cities: { "Topeka": [-95.6890, 39.0473], "Wichita": [-97.3301, 37.6872], "Overland Park": [-94.6708, 38.9822], "Kansas City": [-94.6274, 39.1140], "Lawrence": [-95.2353, 38.9717] }, facts: { "Topeka": "The name means 'a good place to dig potatoes'.", "Wichita": "Known as the 'Air Capital of the World'." } },
-            "KY": { name: "Kentucky", capital: "Frankfort", cities: { "Frankfort": [-84.8705, 38.2009], "Louisville": [-85.7585, 38.2527], "Lexington": [-84.5037, 38.0406], "Bowling Green": [-86.4436, 36.9685], "Owensboro": [-87.1181, 37.7719] }, facts: { "Frankfort": "Divided by the Kentucky River.", "Louisville": "Home of the Kentucky Derby and Louisville Slugger." } },
-            "LA": { name: "Louisiana", capital: "Baton Rouge", cities: { "Baton Rouge": [-91.1403, 30.4583], "New Orleans": [-90.0715, 29.9511], "Shreveport": [-93.7502, 32.5252], "Lafayette": [-92.0198, 30.2241], "Lake Charles": [-93.2174, 30.2265] }, facts: { "Baton Rouge": "French for 'Red Stick'.", "New Orleans": "Famous for Mardi Gras and jazz music." } },
-            "ME": { name: "Maine", capital: "Augusta", cities: { "Augusta": [-69.7795, 44.3106], "Portland": [-70.2568, 43.6591], "Lewiston": [-70.2148, 44.1004], "Bangor": [-68.7778, 44.8016], "Bar Harbor": [-68.2039, 44.3876] }, facts: { "Augusta": "The easternmost state capital.", "Portland": "Maine's economic and cultural hub." } },
-            "MD": { name: "Maryland", capital: "Annapolis", cities: { "Annapolis": [-76.4922, 38.9784], "Baltimore": [-76.6122, 39.2904], "Frederick": [-77.4105, 39.4143], "Rockville": [-77.1528, 39.0840], "Ocean City": [-75.0849, 38.3365] }, facts: { "Annapolis": "Known as the 'Sailing Capital of the World'.", "Baltimore": "Home of the 'Star-Spangled Banner'." } },
-            "MA": { name: "Massachusetts", capital: "Boston", cities: { "Boston": [-71.0589, 42.3601], "Worcester": [-71.8023, 42.2626], "Springfield": [-72.5898, 42.1015], "Cambridge": [-71.1097, 42.3736], "Salem": [-70.8959, 42.5195] }, facts: { "Boston": "One of the oldest municipalities in the US.", "Cambridge": "Home to Harvard University and MIT." } },
-            "MI": { name: "Michigan", capital: "Lansing", cities: { "Lansing": [-84.5555, 42.7325], "Detroit": [-83.0458, 42.3314], "Grand Rapids": [-85.6681, 42.9634], "Ann Arbor": [-83.7430, 42.2808], "Traverse City": [-85.6206, 44.7631] }, facts: { "Lansing": "The only state capital located in a township of the same name.", "Detroit": "Known as the 'Motor City'." } },
-            "MN": { name: "Minnesota", capital: "Saint Paul", cities: { "Saint Paul": [-93.0899, 44.9537], "Minneapolis": [-93.2650, 44.9778], "Rochester": [-92.4802, 44.0121], "Duluth": [-92.1005, 46.7867], "Bloomington": [-93.2983, 44.8408] }, facts: { "Saint Paul": "Forms the 'Twin Cities' with Minneapolis.", "Minneapolis": "Famous for the Mall of America nearby." } },
-            "MS": { name: "Mississippi", capital: "Jackson", cities: { "Jackson": [-90.1848, 32.2988], "Gulfport": [-89.0928, 30.3674], "Biloxi": [-88.8853, 30.3960], "Hattiesburg": [-89.2903, 31.3271], "Tupelo": [-88.7034, 34.2576] }, facts: { "Jackson": "Sits atop an extinct volcano.", "Biloxi": "A major center of the seafood industry." } },
-            "MO": { name: "Missouri", capital: "Jefferson City", cities: { "Jefferson City": [-92.1735, 38.5767], "Kansas City": [-94.5786, 39.0997], "St. Louis": [-90.1994, 38.6270], "Springfield": [-93.2923, 37.2089], "Branson": [-93.2185, 36.6437] }, facts: { "Jefferson City": "Named after Thomas Jefferson.", "St. Louis": "The Gateway Arch is the world's tallest arch." } },
-            "MT": { name: "Montana", capital: "Helena", cities: { "Helena": [-112.0270, 46.5891], "Billings": [-108.5007, 45.7833], "Missoula": [-113.9966, 46.8721], "Great Falls": [-111.3218, 47.5053], "Bozeman": [-111.0429, 45.6770] }, facts: { "Helena": "Founded by gold miners in 1864.", "Bozeman": "Gateway to Yellowstone National Park." } },
-            "NE": { name: "Nebraska", capital: "Lincoln", cities: { "Lincoln": [-96.7026, 40.8136], "Omaha": [-95.9345, 41.2565], "Bellevue": [-95.9403, 41.1578], "Grand Island": [-98.3414, 40.9264], "Kearney": [-99.0817, 40.6995] }, facts: { "Lincoln": "Home to the only unicameral legislature in the US.", "Omaha": "Home of billionaire Warren Buffett." } },
-            "NV": { name: "Nevada", capital: "Carson City", cities: { "Carson City": [-119.7674, 39.1638], "Las Vegas": [-115.1398, 36.1699], "Henderson": [-114.9817, 36.0395], "Reno": [-119.8138, 39.5296], "Elko": [-115.7631, 40.8324] }, facts: { "Carson City": "One of the smallest state capitals.", "Las Vegas": "The brightest spot on Earth from space." } },
-            "NH": { name: "New Hampshire", capital: "Concord", cities: { "Concord": [-71.5376, 43.2081], "Manchester": [-71.4548, 42.9956], "Nashua": [-71.4676, 42.7654], "Dover": [-70.8737, 43.1979], "Portsmouth": [-70.7626, 43.0718] }, facts: { "Concord": "Famous for its granite quarries.", "Manchester": "A major textile manufacturing center in the 19th century." } },
-            "NJ": { name: "New Jersey", capital: "Trenton", cities: { "Trenton": [-74.7429, 40.2206], "Newark": [-74.1724, 40.7357], "Jersey City": [-74.0431, 40.7178], "Paterson": [-74.1718, 40.9168], "Atlantic City": [-74.4229, 39.3643] }, facts: { "Trenton": "Site of George Washington's first military victory.", "Atlantic City": "Inspiration for the game Monopoly." } },
-            "NM": { name: "New Mexico", capital: "Santa Fe", cities: { "Santa Fe": [-105.9378, 35.6870], "Albuquerque": [-106.6056, 35.0844], "Las Cruces": [-106.7785, 32.3199], "Rio Rancho": [-106.6622, 35.2328], "Roswell": [-104.5230, 33.3943] }, facts: { "Santa Fe": "The highest state capital in the US (7,199 ft).", "Roswell": "Famous for the 1947 UFO incident." } },
-            "NY": { name: "New York", capital: "Albany", cities: { "Albany": [-73.7562, 42.6526], "New York City": [-74.0060, 40.7128], "Buffalo": [-78.8784, 42.8864], "Rochester": [-77.6109, 43.1610], "Syracuse": [-76.1474, 43.0481] }, facts: { "Albany": "One of the oldest surviving settlements in the US.", "New York City": "The financial capital of the world." } },
-            "NC": { name: "North Carolina", capital: "Raleigh", cities: { "Raleigh": [-78.6382, 35.7796], "Charlotte": [-80.8431, 35.2271], "Greensboro": [-79.7920, 36.0726], "Durham": [-78.8986, 35.9940], "Asheville": [-82.5515, 35.5951] }, facts: { "Raleigh": "Known as the 'City of Oaks'.", "Charlotte": "A major banking hub and home to NASCAR." } },
-            "ND": { name: "North Dakota", capital: "Bismarck", cities: { "Bismarck": [-100.7837, 46.8083], "Fargo": [-96.7898, 46.8772], "Grand Forks": [-97.0329, 47.9253], "Minot": [-101.2963, 48.2325], "Williston": [-103.6256, 48.1470] }, facts: { "Bismarck": "Named after German Chancellor Otto von Bismarck.", "Fargo": "The largest city in North Dakota." } },
-            "OH": { name: "Ohio", capital: "Columbus", cities: { "Columbus": [-82.9988, 39.9612], "Cleveland": [-81.6944, 41.4993], "Cincinnati": [-84.5120, 39.1031], "Toledo": [-83.5552, 41.6528], "Dayton": [-84.1916, 39.7589] }, facts: { "Columbus": "Home to The Ohio State University.", "Cleveland": "Home to the Rock and Roll Hall of Fame." } },
-            "OK": { name: "Oklahoma", capital: "Oklahoma City", cities: { "Oklahoma City": [-97.5164, 35.4676], "Tulsa": [-95.9928, 36.1540], "Norman": [-97.4395, 35.2226], "Broken Arrow": [-95.7908, 36.0526], "Lawton": [-98.3903, 34.6036] }, facts: { "Oklahoma City": "Founded during the Land Run of 1889.", "Tulsa": "Once known as the 'Oil Capital of the World'." } },
-            "OR": { name: "Oregon", capital: "Salem", cities: { "Salem": [-123.0351, 44.9429], "Portland": [-122.6784, 45.5152], "Eugene": [-123.0868, 44.0521], "Bend": [-121.3153, 44.0582], "Medford": [-122.8752, 42.3265] }, facts: { "Salem": "The state capitol is topped by a golden pioneer.", "Portland": "Famous for its bridges, parks, and donuts." } },
-            "PA": { name: "Pennsylvania", capital: "Harrisburg", cities: { "Harrisburg": [-76.8867, 40.2732], "Philadelphia": [-75.1652, 39.9526], "Pittsburgh": [-79.9959, 40.4406], "Allentown": [-75.4902, 40.6023], "Erie": [-80.0850, 42.1292] }, facts: { "Harrisburg": "Played a key role in the Civil War/Underground Railroad.", "Philadelphia": "The birthplace of the United States." } },
-            "RI": { name: "Rhode Island", capital: "Providence", cities: { "Providence": [-71.4128, 41.8240], "Warwick": [-71.4162, 41.7001], "Cranston": [-71.4406, 41.7798], "Pawtucket": [-71.3824, 41.8787], "Newport": [-71.3128, 41.4901] }, facts: { "Providence": "Founded by Roger Williams in 1636.", "Newport": "Famous for its Gilded Age mansions." } },
-            "SC": { name: "South Carolina", capital: "Columbia", cities: { "Columbia": [-81.0348, 34.0007], "Charleston": [-79.9311, 32.7765], "North Charleston": [-79.9733, 32.8546], "Mount Pleasant": [-79.8600, 32.7935], "Greenville": [-82.3940, 34.8526] }, facts: { "Columbia": "The first planned city in the US.", "Charleston": "Where the first shots of the Civil War were fired." } },
-            "SD": { name: "South Dakota", capital: "Pierre", cities: { "Pierre": [-100.3508, 44.3683], "Sioux Falls": [-96.7265, 43.5460], "Rapid City": [-103.2310, 44.0805], "Aberdeen": [-98.4842, 45.4647], "Deadwood": [-103.7296, 44.3767] }, facts: { "Pierre": "Pronounced 'Peer', it's the second smallest capital.", "Rapid City": "Gateway to Mount Rushmore." } },
-            "TN": { name: "Tennessee", capital: "Nashville", cities: { "Nashville": [-86.7816, 36.1627], "Memphis": [-90.0490, 35.1495], "Knoxville": [-83.9207, 35.9606], "Chattanooga": [-85.2666, 35.0456], "Gatlinburg": [-83.5102, 35.7143] }, facts: { "Nashville": "Known worldwide as Music City.", "Memphis": "Home to Graceland and the blues." } },
-            "TX": { name: "Texas", capital: "Austin", cities: { "Austin": [-97.7431, 30.2672], "Houston": [-95.3698, 29.7604], "Dallas": [-96.7970, 32.7767], "San Antonio": [-98.4936, 29.4241], "El Paso": [-106.4850, 31.7619] }, facts: { "Austin": "Known as the Live Music Capital of the World.", "Houston": "Home to NASA Mission Control." } },
-            "UT": { name: "Utah", capital: "Salt Lake City", cities: { "Salt Lake City": [-111.8910, 40.7608], "West Valley City": [-112.0011, 40.6916], "Provo": [-111.6585, 40.2338], "West Jordan": [-111.9391, 40.6097], "Park City": [-111.4980, 40.6461] }, facts: { "Salt Lake City": "Founded by Mormon pioneers in 1847.", "Park City": "Host of the Sundance Film Festival." } },
-            "VT": { name: "Vermont", capital: "Montpelier", cities: { "Montpelier": [-72.5778, 44.2601], "Burlington": [-73.2121, 44.4759], "Rutland": [-72.9726, 43.6106], "Barre": [-72.5012, 44.1970], "Stowe": [-72.6918, 44.4654] }, facts: { "Montpelier": "The smallest state capital by population.", "Burlington": "Vermont's largest city, located on Lake Champlain." } },
-            "VA": { name: "Virginia", capital: "Richmond", cities: { "Richmond": [-77.4360, 37.5407], "Virginia Beach": [-75.9779, 36.8529], "Norfolk": [-76.2859, 36.8508], "Chesapeake": [-76.2875, 36.7682], "Arlington": [-77.1008, 38.8783] }, facts: { "Richmond": "Capital of the Confederacy during the Civil War.", "Arlington": "Home to the Pentagon and Arlington National Cemetery." } },
-            "WA": { name: "Washington", capital: "Olympia", cities: { "Olympia": [-122.9007, 47.0379], "Seattle": [-122.3321, 47.6062], "Spokane": [-117.4260, 47.6588], "Tacoma": [-122.4443, 47.2529], "Vancouver": [-122.6615, 45.6387] }, facts: { "Olympia": "Located at the southern end of Puget Sound.", "Seattle": "Home of Starbucks, Amazon, and the Space Needle." } },
-            "WV": { name: "West Virginia", capital: "Charleston", cities: { "Charleston": [-81.6326, 38.3498], "Huntington": [-82.4451, 38.4193], "Morgantown": [-79.9559, 39.6295], "Parkersburg": [-81.5615, 39.2667], "Wheeling": [-80.7209, 40.0640] }, facts: { "Charleston": "The golden dome of the capitol is real gold leaf.", "Morgantown": "Home to West Virginia University." } },
-            "WI": { name: "Wisconsin", capital: "Madison", cities: { "Madison": [-89.4012, 43.0731], "Milwaukee": [-87.9065, 43.0389], "Green Bay": [-88.0198, 44.5192], "Kenosha": [-87.8212, 42.5847], "Racine": [-87.7829, 42.7261] }, facts: { "Madison": "Built on an isthmus between two lakes.", "Green Bay": "Home to the Packers, the only community-owned NFL team." } },
-            "WY": { name: "Wyoming", capital: "Cheyenne", cities: { "Cheyenne": [-104.8202, 41.1400], "Casper": [-106.3252, 42.8666], "Laramie": [-105.5911, 41.3114], "Gillette": [-105.5022, 44.2911], "Jackson": [-110.7624, 43.4799] }, facts: { "Cheyenne": "Named for the Cheyenne Native American nation.", "Jackson": "Gateway to Grand Teton and Yellowstone National Parks." } }
+            "AL": { name: "Alabama", capital: "Montgomery", cities: { "Montgomery": [-86.3077, 32.3792], "Birmingham": [-86.8104, 33.5186], "Mobile": [-88.0399, 30.6954], "Huntsville": [-86.5861, 34.7304], "Tuscaloosa": [-87.5692, 33.2098] }, facts: { "Montgomery": "Capital since 1846, it was the first capital of the Confederacy.", "Birmingham": "The 'Pittsburgh of the South' due to its massive iron and steel industry.", "Mobile": "The only saltwater port in Alabama and the site of the first US Mardi Gras.", "Huntsville": "The 'Rocket City' where NASA developed the Saturn V rockets.", "Tuscaloosa": "Named after Chief Tuskaloosa, it is the home of the University of Alabama." } },
+            "AK": { name: "Alaska", capital: "Juneau", cities: { "Juneau": [-134.4197, 58.3019], "Anchorage": [-149.9003, 61.2181], "Fairbanks": [-147.7164, 64.8378], "Sitka": [-135.3300, 57.0531], "Ketchikan": [-131.6461, 55.3422] }, facts: { "Juneau": "No roads connect this capital to the rest of the state; you must arrive by air or sea.", "Anchorage": "Nearly 40% of Alaska's population lives in this city.", "Fairbanks": "Known as the Golden Heart City, it's one of the best spots to view the Northern Lights.", "Sitka": "It was the capital of Russian America before Alaska was sold to the US.", "Ketchikan": "The 'Salmon Capital of the World' and home to the world's largest collection of totem poles." } },
+            "AZ": { name: "Arizona", capital: "Phoenix", cities: { "Phoenix": [-112.0740, 33.4484], "Tucson": [-110.9747, 32.2226], "Mesa": [-111.8315, 33.4152], "Scottsdale": [-111.9261, 33.4942], "Flagstaff": [-111.6513, 35.1983] }, facts: { "Phoenix": "The only state capital with a population of over 1.6 million people.", "Tucson": "Surrounded by five mountain ranges and home to the historic Mission San Xavier del Bac.", "Mesa": "Features the Mesa Arts Center, the largest performing arts complex in the desert Southwest.", "Scottsdale": "Famous for its 'Old Town' western charm and high-end desert resorts.", "Flagstaff": "Located at 7,000 feet, Pluto was discovered at the Lowell Observatory here." } },
+            "AR": { name: "Arkansas", capital: "Little Rock", cities: { "Little Rock": [-92.2896, 34.7465], "Fayetteville": [-94.1574, 36.0626], "Fort Smith": [-94.4229, 35.3859], "Springdale": [-94.1288, 36.1867], "Hot Springs": [-93.0552, 34.5037] }, facts: { "Little Rock": "Named by French explorers for a small rock formation used as a river landmark.", "Fayetteville": "The heartbeat of the Ozarks and home to the Arkansas Razorbacks.", "Fort Smith": "A frontier town famous for the 'Hanging Judge' Isaac Parker.", "Springdale": "The poultry capital of the world and home to Tyson Foods.", "Hot Springs": "A national park city famous for its thermal waters and bathhouses." } },
+            "CA": { name: "California", capital: "Sacramento", cities: { "Sacramento": [-121.4944, 38.5816], "Los Angeles": [-118.2437, 34.0522], "San Francisco": [-122.4194, 37.7749], "San Diego": [-117.1611, 32.7157], "San Jose": [-121.8863, 37.3382] }, facts: { "Sacramento": "It became the capital in 1854 during the height of the Gold Rush.", "Los Angeles": "If this city were its own country, its economy would be bigger than Saudi Arabia.", "San Francisco": "Built on over 50 hills and home to the world's last manually operated cable car system.", "San Diego": "Known as the birthplace of California, it has the world's most temperate climate.", "San Jose": "The 'Capital of Silicon Valley' and the first capital of California." } },
+            "CO": { name: "Colorado", capital: "Denver", cities: { "Denver": [-104.9903, 39.7392], "Colorado Springs": [-104.8214, 38.8339], "Aurora": [-104.8319, 39.7294], "Fort Collins": [-105.0844, 40.5853], "Boulder": [-105.2705, 40.0150] }, facts: { "Denver": "Known as the Mile High City because its elevation is exactly 5,280 feet.", "Colorado Springs": "Located at the foot of Pikes Peak, it's home to the US Olympic Committee.", "Aurora": "Known for its diversity and the massive Buckley Space Force Base.", "Fort Collins": "The inspiration for Disneyland's Main Street, USA.", "Boulder": "Nestled against the Flatirons, it's frequently ranked the happiest city in America." } },
+            "CT": { name: "Connecticut", capital: "Hartford", cities: { "Hartford": [-72.6734, 41.7658], "Bridgeport": [-73.1894, 41.1792], "New Haven": [-72.9279, 41.3083], "Stamford": [-73.5387, 41.0534], "Waterbury": [-73.0454, 41.5582] }, facts: { "Hartford": "Home to the nation's oldest public art museum, the Wadsworth Atheneum.", "Bridgeport": "The birthplace of P.T. Barnum and home to the Beardsley Zoo.", "New Haven": "The birthplace of the hamburger (Louis' Lunch) and home to Yale University.", "Stamford": "Houses the headquarters of numerous Fortune 500 companies.", "Waterbury": "The 'Brass City' was once the center of the American brass industry." } },
+            "DE": { name: "Delaware", capital: "Dover", cities: { "Dover": [-75.5297, 39.1582], "Wilmington": [-75.5484, 39.7447], "Newark": [-75.7497, 39.6837], "Middletown": [-75.7163, 39.4496], "Smyrna": [-75.6049, 39.2998] }, facts: { "Dover": "Founded in 1683 by William Penn, it's home to a major NASCAR speedway.", "Wilmington": "A global hub for the chemical and credit card industries.", "Newark": "Home to the University of Delaware and formerly a major paper mill hub.", "Middletown": "One of the fastest-growing towns in Delaware, known for its historic downtown.", "Smyrna": "Named after the ancient Greek city in modern-day Turkey." } },
+            "FL": { name: "Florida", capital: "Tallahassee", cities: { "Tallahassee": [-84.2807, 30.4383], "Miami": [-80.1918, 25.7617], "Orlando": [-81.3792, 28.5383], "Tampa": [-82.4572, 27.9506], "Jacksonville": [-81.6557, 30.3322] }, facts: { "Tallahassee": "The only capital city of the Confederacy east of the Mississippi not captured by Union forces.", "Miami": "The only major US city founded by a woman (Julia Tuttle).", "Orlando": "The most-visited destination in the US due to its massive theme parks.", "Tampa": "Famous as the cigar-making capital of the world (Ybor City).", "Jacksonville": "The largest city by land area in the contiguous United States." } },
+            "GA": { name: "Georgia", capital: "Atlanta", cities: { "Atlanta": [-84.3880, 33.7490], "Savannah": [-81.0998, 32.0809], "Augusta": [-81.9748, 33.4735], "Macon": [-83.6324, 32.8407], "Columbus": [-84.9901, 32.4610] }, facts: { "Atlanta": "Burned to the ground during the Civil War, its symbol is the Phoenix.", "Savannah": "Established in 1733, it was the first planned city in the United States.", "Augusta": "Home to the Masters, the most prestigious golf tournament in the world.", "Macon": "The 'Cherry Blossom Capital of the World' with over 300,000 Yoshino cherry trees.", "Columbus": "Home to the National Infantry Museum and a massive urban whitewater course." } },
+            "HI": { name: "Hawaii", capital: "Honolulu", cities: { "Honolulu": [-157.8583, 21.3069], "Hilo": [-155.0844, 19.7297], "Kailua": [-157.7394, 21.4022], "Kapolei": [-158.0772, 21.3328], "Lihue": [-159.3711, 21.9811] }, facts: { "Honolulu": "Means 'Sheltered Harbor' and is the remote-most large city in the world.", "Hilo": "Known for its waterfalls and proximity to the world's most active volcano.", "Kailua": "Famous for Lanikai Beach, often ranked among the best beaches in the world.", "Kapolei": "Known as 'Oahu's Second City' to alleviate congestion in Honolulu.", "Lihue": "The government and commercial center of the island of Kauai." } },
+            "ID": { name: "Idaho", capital: "Boise", cities: { "Boise": [-116.2023, 43.6150], "Meridian": [-116.3915, 43.6121], "Nampa": [-116.5635, 43.5407], "Idaho Falls": [-112.0340, 43.4917], "Pocatello": [-112.4506, 42.8666] }, facts: { "Boise": "The name comes from the French 'Les Bois' (The Woods).", "Meridian": "Originally called Hunter, it's now one of the fastest-growing cities in the US.", "Nampa": "The heart of Idaho's wine country.", "Idaho Falls": "Home to the Idaho National Laboratory, a massive nuclear research facility.", "Pocatello": "Known as the 'Gate City' for its importance in rail and road travel." } },
+            "IL": { name: "Illinois", capital: "Springfield", cities: { "Springfield": [-89.6501, 39.7817], "Chicago": [-87.6298, 41.8781], "Aurora": [-88.3156, 41.7606], "Rockford": [-89.0939, 42.2711], "Joliet": [-88.0817, 41.5250] }, facts: { "Springfield": "The city where Abraham Lincoln lived and is buried.", "Chicago": "The birthplace of the Twinkie and the ferris wheel.", "Aurora": "The 'City of Lights' was the first US city to use electric street lighting.", "Rockford": "Famous for the Rockford Peaches, the first women's pro baseball team.", "Joliet": "Known for its historic prison and the site of the first Dairy Queen." } },
+            "IN": { name: "Indiana", capital: "Indianapolis", cities: { "Indianapolis": [-86.1581, 39.7684], "Fort Wayne": [-85.1394, 41.0793], "Evansville": [-87.5711, 37.9716], "South Bend": [-86.2520, 41.6764], "Gary": [-87.3464, 41.5940] }, facts: { "Indianapolis": "Features more war memorials than any city except Washington, D.C.", "Fort Wayne": "Named after Gen. Anthony Wayne, it's known as the 'City of Churches'.", "Evansville": "The economic hub of a three-state region (IN, KY, IL).", "South Bend": "The home of the Studebaker automobile and the University of Notre Dame.", "Gary": "The birthplace of the 'King of Pop,' Michael Jackson." } },
+            "IA": { name: "Iowa", capital: "Des Moines", cities: { "Des Moines": [-93.6091, 41.6005], "Cedar Rapids": [-91.6656, 41.9779], "Davenport": [-90.5776, 41.5236], "Sioux City": [-96.4103, 42.4999], "Iowa City": [-91.5302, 41.6611] }, facts: { "Des Moines": "The name is derived from 'Riviere des Moines' (River of the Monks).", "Cedar Rapids": "One of the few cities in the world with government offices on an island.", "Davenport": "The largest city on the Mississippi not protected by a permanent floodwall.", "Sioux City": "The location where Sergeant Floyd (Lewis & Clark expedition) is buried.", "Iowa City": "A UNESCO City of Literature and the state's first capital." } },
+            "KS": { name: "Kansas", capital: "Topeka", cities: { "Topeka": [-95.6890, 39.0473], "Wichita": [-97.3301, 37.6872], "Overland Park": [-94.6708, 38.9822], "Kansas City": [-94.6274, 39.1140], "Lawrence": [-95.2353, 38.9717] }, facts: { "Topeka": "The site of the landmark Brown v. Board of Education case.", "Wichita": "Known as the Air Capital of the World for its aviation manufacturing.", "Overland Park": "Home to the Nerman Museum of Contemporary Art.", "Kansas City": "Famous for its unique Kansas City-style barbecue.", "Lawrence": "Founded as a free-state stronghold by abolitionists in 1854." } },
+            "KY": { name: "Kentucky", capital: "Frankfort", cities: { "Frankfort": [-84.8705, 38.2009], "Louisville": [-85.7585, 38.2527], "Lexington": [-84.5037, 38.0406], "Bowling Green": [-86.4436, 36.9685], "Owensboro": [-87.1181, 37.7719] }, facts: { "Frankfort": "The fourth smallest US state capital by population.", "Louisville": "The birthplace of Muhammad Ali and 90% of the world's disco balls.", "Lexington": "The 'Horse Capital of the World' and the heart of the Bluegrass region.", "Bowling Green": "Every Chevrolet Corvette in the world is made in this city.", "Owensboro": "The 'Barbecue Capital of the World' (known for mutton barbecue)." } },
+            "LA": { name: "Louisiana", capital: "Baton Rouge", cities: { "Baton Rouge": [-91.1403, 30.4583], "New Orleans": [-90.0715, 29.9511], "Shreveport": [-93.7502, 32.5252], "Lafayette": [-92.0198, 30.2241], "Lake Charles": [-93.2174, 30.2265] }, facts: { "Baton Rouge": "French for 'Red Stick', referring to a post used to mark hunting grounds.", "New Orleans": "The birthplace of Jazz and home to the world-famous French Quarter.", "Shreveport": "A former capital of Louisiana during the Civil War.", "Lafayette": "The hub of Cajun and Zydeco music culture.", "Lake Charles": "Known as the 'Festival Capital of Louisiana' with over 75 events yearly." } },
+            "ME": { name: "Maine", capital: "Augusta", cities: { "Augusta": [-69.7795, 44.3106], "Portland": [-70.2568, 43.6591], "Lewiston": [-70.2148, 44.1004], "Bangor": [-68.7778, 44.8016], "Auburn": [-70.2312, 44.0979] }, facts: { "Augusta": "The easternmost state capital in the United States.", "Portland": "Known for its lighthouse views and having more restaurants per capita than NYC.", "Lewiston": "Site of the famous 1965 Ali-Liston heavyweight boxing match.", "Bangor": "Home to horror author Stephen King and a giant statue of Paul Bunyan.", "Auburn": "Known as 'The Shoe City' for its historical shoe manufacturing industry." } },
+            "MD": { name: "Maryland", capital: "Annapolis", cities: { "Annapolis": [-76.4922, 38.9784], "Baltimore": [-76.6122, 39.2904], "Frederick": [-77.4105, 39.4143], "Gaithersburg": [-77.1944, 39.1434], "Ocean City": [-75.0849, 38.3365] }, facts: { "Annapolis": "Briefly served as the temporary capital of the United States (1783-84).", "Baltimore": "The city where Francis Scott Key wrote the National Anthem.", "Frederick": "Home to the National Museum of Civil War Medicine.", "Gaithersburg": "Known as the 'City of Science' due to its high concentration of biotech firms.", "Ocean City": "The state's primary beach resort, famous for its historic wooden boardwalk." } },
+            "MA": { name: "Massachusetts", capital: "Boston", cities: { "Boston": [-71.0589, 42.3601], "Worcester": [-71.8023, 42.2626], "Springfield": [-72.5898, 42.1015], "Cambridge": [-71.1097, 42.3736], "Lowell": [-71.3162, 42.6334] }, facts: { "Boston": "Home to America's first public park (Boston Common) and first subway system.", "Worcester": "The birthplace of the liquid fuel rocket and the smiley face icon.", "Springfield": "The birthplace of basketball and Dr. Seuss.", "Cambridge": "Home to Harvard University (1636), the oldest institution of higher learning in the US.", "Lowell": "The cradle of the American Industrial Revolution." } },
+            "MI": { name: "Michigan", capital: "Lansing", cities: { "Lansing": [-84.5555, 42.7325], "Detroit": [-83.0458, 42.3314], "Grand Rapids": [-85.6681, 42.9634], "Ann Arbor": [-83.7430, 42.2808], "Flint": [-83.6875, 43.0125] }, facts: { "Lansing": "The only US state capital located in a township of the same name.", "Detroit": "The first city in the world to have assigned phone numbers.", "Grand Rapids": "Known as the 'Furniture City' and the birthplace of Gerald Ford.", "Ann Arbor": "Home to the University of Michigan and its massive 'Big House' stadium.", "Flint": "The birthplace of General Motors." } },
+            "MN": { name: "Minnesota", capital: "Saint Paul", cities: { "Saint Paul": [-93.0899, 44.9537], "Minneapolis": [-93.2650, 44.9778], "Rochester": [-92.4802, 44.0121], "Duluth": [-92.1005, 46.7867], "Bloomington": [-93.2983, 44.8408] }, facts: { "Saint Paul": "The city was originally called 'Pig's Eye' after a local tavern owner.", "Minneapolis": "Known as the 'City of Lakes', it has 22 lakes within its limits.", "Rochester": "Home to the world-renowned Mayo Clinic.", "Duluth": "The most inland freshwater port in the world.", "Bloomington": "Home to the Mall of America, the largest mall in the United States." } },
+            "MS": { name: "Mississippi", capital: "Jackson", cities: { "Jackson": [-90.1848, 32.2988], "Gulfport": [-89.0928, 30.3674], "Biloxi": [-88.8853, 30.3960], "Hattiesburg": [-89.2903, 31.3271], "Tupelo": [-88.7034, 34.2576] }, facts: { "Jackson": "Named after Andrew Jackson and sits atop an extinct volcano.", "Gulfport": "A major seaport and home to the US Navy Seabees.", "Biloxi": "Known as the 'Cradle of the Gulf' and famous for its casino industry.", "Hattiesburg": "Nicknamed the 'Hub City' because of its intersections of rails and roads.", "Tupelo": "The birthplace of Elvis Presley." } },
+            "MO": { name: "Missouri", capital: "Jefferson City", cities: { "Jefferson City": [-92.1735, 38.5767], "Kansas City": [-94.5786, 39.0997], "St. Louis": [-90.1994, 38.6270], "Springfield": [-93.2923, 37.2089], "Branson": [-93.2185, 36.6437] }, facts: { "Jefferson City": "Named for Thomas Jefferson, the 3rd US President.", "Kansas City": "Features more fountains than any city except Rome.", "St. Louis": "Site of the first Olympic games held in the United States (1904).", "Springfield": "The birthplace of Route 66.", "Branson": "Known as the 'Live Music Show Capital of the World'." } },
+            "MT": { name: "Montana", capital: "Helena", cities: { "Helena": [-112.0270, 46.5891], "Billings": [-108.5007, 45.7833], "Missoula": [-113.9966, 46.8721], "Great Falls": [-111.3218, 47.5053], "Bozeman": [-111.0429, 45.6770] }, facts: { "Helena": "Founded by the 'Four Georgians' after they struck gold at Last Chance Gulch.", "Billings": "The largest city in Montana, surrounded by the sandstone 'Rimrocks'.", "Missoula": "Known as the 'Garden City' and home to the Smokejumpers base.", "Great Falls": "The 'Electric City' because of its five nearby hydroelectric dams.", "Bozeman": "Gateway to Yellowstone and home to the Museum of the Rockies." } },
+            "NE": { name: "Nebraska", capital: "Lincoln", cities: { "Lincoln": [-96.7026, 40.8136], "Omaha": [-95.9345, 41.2565], "Bellevue": [-95.9403, 41.1578], "Grand Island": [-98.3414, 40.9264], "Kearney": [-99.0817, 40.6995] }, facts: { "Lincoln": "Named after Abraham Lincoln, it has the only unicameral legislature in the US.", "Omaha": "The birthplace of the TV dinner and the Reuben sandwich.", "Bellevue": "Means 'beautiful view' in French and is the oldest city in Nebraska.", "Grand Island": "Three-time winner of the 'All-America City' award.", "Kearney": "The 'Sandhill Crane Capital of the World' during migration season." } },
+            "NV": { name: "Nevada", capital: "Carson City", cities: { "Carson City": [-119.7674, 39.1638], "Las Vegas": [-115.1398, 36.1699], "Henderson": [-114.9817, 36.0395], "Reno": [-119.8138, 39.5296], "Elko": [-115.7631, 40.8324] }, facts: { "Carson City": "Named for explorer Kit Carson, it became the capital in 1864.", "Las Vegas": "If you ate at a different buffet for every meal, it would take years to try them all.", "Henderson": "Home to the Ethel M Chocolate Factory and Botanical Cactus Garden.", "Reno": "Known as 'The Biggest Little City in the World'.", "Elko": "The center of Nevada's gold mining industry." } },
+            "NH": { name: "New Hampshire", capital: "Concord", cities: { "Concord": [-71.5376, 43.2081], "Manchester": [-71.4548, 42.9956], "Nashua": [-71.4676, 42.7654], "Derry": [-71.3273, 42.8806], "Portsmouth": [-70.7626, 43.0718] }, facts: { "Concord": "The city where the first alarm clock was invented (1787).", "Manchester": "The largest city in New Hampshire, formerly a major textile hub.", "Nashua": "Twice named the 'Best Place to Live in America' by Money magazine.", "Derry": "The childhood home of Alan Shepard, the first American in space.", "Portsmouth": "The state's only deep-water port, established in 1623." } },
+            "NJ": { name: "New Jersey", capital: "Trenton", cities: { "Trenton": [-74.7429, 40.2206], "Newark": [-74.1724, 40.7357], "Jersey City": [-74.0431, 40.7178], "Paterson": [-74.1718, 40.9168], "Atlantic City": [-74.4229, 39.3643] }, facts: { "Trenton": "Capital since 1790, and the site of Washington's 'Crossing of the Delaware'.", "Newark": "The state's largest city and a major global shipping hub.", "Jersey City": "The 'Sixth Borough' of NYC, known for its incredible skyline views.", "Paterson": "The 'Silk City' and the site of the nation's first planned industrial park.", "Atlantic City": "Home to the world's first boardwalk and the Miss America Pageant." } },
+            "NM": { name: "New Mexico", capital: "Santa Fe", cities: { "Santa Fe": [-105.9378, 35.6870], "Albuquerque": [-106.6056, 35.0844], "Las Cruces": [-106.7785, 32.3199], "Rio Rancho": [-106.6622, 35.2328], "Roswell": [-104.5230, 33.3943] }, facts: { "Santa Fe": "Founded in 1610, it is the oldest state capital in the United States.", "Albuquerque": "The Hot Air Balloon Capital of the World.", "Las Cruces": "Known as 'The City of the Crosses' and home to New Mexico State University.", "Rio Rancho": "The economic hub of Sandoval County and a major tech center.", "Roswell": "World-famous for the 1947 'Roswell Incident' and alien tourism." } },
+            "NY": { name: "New York", capital: "Albany", cities: { "Albany": [-73.7562, 42.6526], "New York City": [-74.0060, 40.7128], "Buffalo": [-78.8784, 42.8864], "Rochester": [-77.6109, 43.1610], "Syracuse": [-76.1474, 43.0481] }, facts: { "Albany": "One of the oldest surviving settlements from the original 13 colonies.", "New York City": "The cultural and financial capital of the world, composed of 5 boroughs.", "Buffalo": "The birthplace of the Buffalo wing and home to the massive Erie Canal terminus.", "Rochester": "The 'Flower City' and former headquarters of Kodak and Xerox.", "Syracuse": "Known as 'Salt City' because of its historical salt spring industry." } },
+            "NC": { name: "North Carolina", capital: "Raleigh", cities: { "Raleigh": [-78.6382, 35.7796], "Charlotte": [-80.8431, 35.2271], "Greensboro": [-79.7920, 36.0726], "Durham": [-78.8986, 35.9940], "Winston-Salem": [-80.2442, 36.0999] }, facts: { "Raleigh": "Known as the 'City of Oaks' and part of the Research Triangle Park.", "Charlotte": "The nation's second-largest banking center after New York City.", "Greensboro": "The site of the 1960 Woolworth's sit-ins, a turning point in the Civil Rights Movement.", "Durham": "The 'City of Medicine' and home to Duke University.", "Winston-Salem": "Formed from two separate towns in 1913, it was a hub for tobacco and textiles." } },
+            "ND": { name: "North Dakota", capital: "Bismarck", cities: { "Bismarck": [-100.7837, 46.8083], "Fargo": [-96.7898, 46.8772], "Grand Forks": [-97.0329, 47.9253], "Minot": [-101.2963, 48.2325], "Williston": [-103.6256, 48.1470] }, facts: { "Bismarck": "The capital building is a rare 19nd-century 'Skyscraper of the Plains'.", "Fargo": "North Dakota's largest city, located on the Red River.", "Grand Forks": "Home to the University of North Dakota and its famous aerospace program.", "Minot": "Known as 'Magic City' for its rapid growth during the railroad boom.", "Williston": "The heart of the Bakken oil formation boom." } },
+            "OH": { name: "Ohio", capital: "Columbus", cities: { "Columbus": [-82.9988, 39.9612], "Cleveland": [-81.6944, 41.4993], "Cincinnati": [-84.5120, 39.1031], "Toledo": [-83.5552, 41.6528], "Akron": [-81.5190, 41.0814] }, facts: { "Columbus": "One of the most populous capitals in the US and home to the Buckeyes.", "Cleveland": "Home to the Rock and Roll Hall of Fame.", "Cincinnati": "Known as the 'Queen City' and the site of the first pro baseball team.", "Toledo": "The 'Glass City' due to its long history of glass manufacturing.", "Akron": "The 'Rubber Capital of the World' and the birthplace of Goodyear." } },
+            "OK": { name: "Oklahoma", capital: "Oklahoma City", cities: { "Oklahoma City": [-97.5164, 35.4676], "Tulsa": [-95.9928, 36.1540], "Norman": [-97.4395, 35.2226], "Broken Arrow": [-95.7908, 36.0526], "Lawton": [-98.3903, 34.6036] }, facts: { "Oklahoma City": "One of the only cities with working oil wells on the capitol grounds.", "Tulsa": "Once the 'Oil Capital of the World' and home to a famous Art Deco district.", "Norman": "Home to the National Weather Center and the University of Oklahoma.", "Broken Arrow": "The largest suburb in Tulsa and a major manufacturing hub.", "Lawton": "Located near the Wichita Mountains Wildlife Refuge." } },
+            "OR": { name: "Oregon", capital: "Salem", cities: { "Salem": [-123.0351, 44.9429], "Portland": [-122.6784, 45.5152], "Eugene": [-123.0868, 44.0521], "Gresham": [-122.4312, 45.4985], "Medford": [-122.8752, 42.3265] }, facts: { "Salem": "The name means 'Peace' and it became the capital in 1851.", "Portland": "Home to Powell's Books, the world's largest independent bookstore.", "Eugene": "Known as 'Track Town USA' and the birthplace of Nike.", "Gresham": "The fourth largest city in Oregon, located at the foot of Mt. Hood.", "Medford": "A major hub for agriculture, particularly pears (Harry & David)." } },
+            "PA": { name: "Pennsylvania", capital: "Harrisburg", cities: { "Harrisburg": [-76.8867, 40.2732], "Philadelphia": [-75.1652, 39.9526], "Pittsburgh": [-79.9959, 40.4406], "Allentown": [-75.4902, 40.6023], "Erie": [-80.0850, 42.1292] }, facts: { "Harrisburg": "Known for its beautiful capitol building with a dome inspired by St. Peter's.", "Philadelphia": "The first capital of the US and home to the Liberty Bell.", "Pittsburgh": "The 'City of Bridges' with 446 bridges, more than Venice, Italy.", "Allentown": "Known for the Liberty Bell Museum, where the bell was hidden during the Revolution.", "Erie": "Pennsylvania's only lake port, located on Lake Erie." } },
+            "RI": { name: "Rhode Island", capital: "Providence", cities: { "Providence": [-71.4128, 41.8240], "Warwick": [-71.4162, 41.7001], "Cranston": [-71.4406, 41.7798], "Pawtucket": [-71.3824, 41.8787], "Newport": [-71.3128, 41.4901] }, facts: { "Providence": "One of the oldest cities in the US, founded by Roger Williams.", "Warwick": "The site of the Gaspee Affair, the first blood spilled in the American Revolution.", "Cranston": "Consistently ranked as one of the safest cities in America.", "Pawtucket": "The birthplace of the American Industrial Revolution (Slater Mill).", "Newport": "Famous for its stunning Gilded Age mansions and sailing heritage." } },
+            "SC": { name: "South Carolina", capital: "Columbia", cities: { "Columbia": [-81.0348, 34.0007], "Charleston": [-79.9311, 32.7765], "North Charleston": [-79.9733, 32.8546], "Mount Pleasant": [-79.8600, 32.7935], "Rock Hill": [-81.0251, 34.9249] }, facts: { "Columbia": "The state's capital and home to the University of South Carolina.", "Charleston": "The oldest and largest city in the state, famous for its Southern charm.", "North Charleston": "The industrial hub of the state and home to Boeing's 787 assembly plant.", "Mount Pleasant": "Connected to Charleston by the iconic Ravenel Bridge.", "Rock Hill": "Known for its 'Old Town' and numerous outdoor parks." } },
+            "SD": { name: "South Dakota", capital: "Pierre", cities: { "Pierre": [-100.3508, 44.3683], "Sioux Falls": [-96.7265, 43.5460], "Rapid City": [-103.2310, 44.0805], "Aberdeen": [-98.4842, 45.4647], "Brookings": [-96.7984, 44.3114] }, facts: { "Pierre": "Pronounced 'Peer', it's the second-least populous US capital.", "Sioux Falls": "Named for the cascades of the Big Sioux River in the heart of town.", "Rapid City": "The 'Gateway to the Black Hills' and Mount Rushmore.", "Aberdeen": "L. Frank Baum lived here before writing 'The Wizard of Oz'.", "Brookings": "Home to South Dakota State University." } },
+            "TN": { name: "Tennessee", capital: "Nashville", cities: { "Nashville": [-86.7816, 36.1627], "Memphis": [-90.0490, 35.1495], "Knoxville": [-83.9207, 35.9606], "Chattanooga": [-85.2666, 35.0456], "Clarksville": [-87.3581, 36.5298] }, facts: { "Nashville": "Known as the 'Athens of the South' and the center of country music.", "Memphis": "The home of Elvis Presley's Graceland and world-famous barbecue.", "Knoxville": "The site of the 1982 World's Fair, known for the Sunsphere.", "Chattanooga": "The first city in the US to have a city-wide gigabit internet network.", "Clarksville": "The home of Fort Campbell and the 101st Airborne Division." } },
+            "TX": { name: "Texas", capital: "Austin", cities: { "Austin": [-97.7431, 30.2672], "Houston": [-95.3698, 29.7604], "Dallas": [-96.7970, 32.7767], "San Antonio": [-98.4936, 29.4241], "El Paso": [-106.4850, 31.7619] }, facts: { "Austin": "The Live Music Capital of the World and home to the massive UT campus.", "Houston": "The most diverse city in America with over 145 different languages spoken.", "Dallas": "The city where the frozen margarita machine was invented.", "San Antonio": "The home of the Alamo and the world-famous River Walk.", "El Paso": "The 'Sun City' located at the junction of two countries and three states." } },
+            "UT": { name: "Utah", capital: "Salt Lake City", cities: { "Salt Lake City": [-111.8910, 40.7608], "West Valley City": [-112.0011, 40.6916], "Provo": [-111.6585, 40.2338], "West Jordan": [-111.9391, 40.6097], "Orem": [-111.6946, 40.2969] }, facts: { "Salt Lake City": "Hosted the 2002 Winter Olympics and is the global HQ for the LDS church.", "West Valley City": "The second-largest city in Utah, known for the Maverik Center.", "Provo": "Home to Brigham Young University (BYU).", "West Jordan": "One of the fastest-growing cities in Utah, located in the Salt Lake Valley.", "Orem": "Known as 'Family City USA'." } },
+            "VT": { name: "Vermont", capital: "Montpelier", cities: { "Montpelier": [-72.5778, 44.2601], "Burlington": [-73.2121, 44.4759], "Rutland": [-72.9726, 43.6106], "Barre": [-72.5012, 44.1970], "Winooski": [-73.1823, 44.4909] }, facts: { "Montpelier": "The least populous state capital in the US (under 8,000 residents).", "Burlington": "The first US city to run entirely on renewable energy.", "Rutland": "Famous for its 'Halloween Parade' and historical marble quarries.", "Barre": "The 'Granite Capital of the World'.", "Winooski": "Known as the 'Onion City' from an Abenaki word." } },
+            "VA": { name: "Virginia", capital: "Richmond", cities: { "Richmond": [-77.4360, 37.5407], "Virginia Beach": [-75.9779, 36.8529], "Norfolk": [-76.2859, 36.8508], "Chesapeake": [-76.2875, 36.7682], "Arlington": [-77.1008, 38.8783] }, facts: { "Richmond": "The site of Patrick Henry's 'Give me liberty, or give me death!' speech.", "Virginia Beach": "The longest pleasure beach in the world according to Guinness Records.", "Norfolk": "Home to the world's largest naval station.", "Chesapeake": "Known for its massive Great Dismal Swamp National Wildlife Refuge.", "Arlington": "Technically a county, but functions as a city; home to the Pentagon." } },
+            "WA": { name: "Washington", capital: "Olympia", cities: { "Olympia": [-122.9007, 47.0379], "Seattle": [-122.3321, 47.6062], "Spokane": [-117.4260, 47.6588], "Tacoma": [-122.4443, 47.2529], "Vancouver": [-122.6615, 45.6387] }, facts: { "Olympia": "Means 'Heavenly' and sits at the foot of the Olympic Mountains.", "Seattle": "The first US city to play a Beatles song on the radio.", "Spokane": "The birthplace of Father's Day (1910).", "Tacoma": "Known as the 'City of Destiny' and famous for its glass art (Dale Chihuly).", "Vancouver": "Not the Canadian one! This one was founded 29 years earlier." } },
+            "WV": { name: "West Virginia", capital: "Charleston", cities: { "Charleston": [-81.6326, 38.3498], "Huntington": [-82.4451, 38.4193], "Morgantown": [-79.9559, 39.6295], "Parkersburg": [-81.5615, 39.2667], "Wheeling": [-80.7209, 40.0640] }, facts: { "Charleston": "The capitol dome is covered in real 23-karat gold leaf.", "Huntington": "The first US city to have electric streetcars.", "Morgantown": "Home to the PRT, a unique automated personal rapid transit system.", "Parkersburg": "Home to the Blennerhassett Island Historical State Park.", "Wheeling": "The first capital of West Virginia." } },
+            "WI": { name: "Wisconsin", capital: "Madison", cities: { "Madison": [-89.4012, 43.0731], "Milwaukee": [-87.9065, 43.0389], "Green Bay": [-88.0198, 44.5192], "Kenosha": [-87.8212, 42.5847], "Racine": [-87.7829, 42.7261] }, facts: { "Madison": "Built on an isthmus between Lake Monona and Lake Mendota.", "Milwaukee": "Famous for its breweries and the Harley-Davidson Museum.", "Green Bay": "The smallest city to host an NFL team (The Packers).", "Kenosha": "Known for its historic streetcars and Lake Michigan views.", "Racine": "The birthplace of the garbage disposal and Horlicks Malted Milk." } },
+            "WY": { name: "Wyoming", capital: "Cheyenne", cities: { "Cheyenne": [-104.8202, 41.1400], "Casper": [-106.3252, 42.8666], "Laramie": [-105.5911, 41.3114], "Gillette": [-105.5022, 44.2911], "Rock Springs": [-109.2321, 41.5875] }, facts: { "Cheyenne": "Known for Frontier Days, the world's largest outdoor rodeo.", "Casper": "A major hub for the cowboy and oil cultures.", "Laramie": "Home to the University of Wyoming, the only university in the state.", "Gillette": "Known as the 'Energy Capital of the Nation' due to its coal production.", "Rock Springs": "Known for its diversity, once called the 'Home of 56 Nationalities'." } }
         };
 
-        // Fallback fact generator
-        function getFact(city, stateData) {
-            if (stateData.facts && stateData.facts[city]) return stateData.facts[city];
-            if (city === stateData.capital) return `It serves as the political heart of ${stateData.name}.`;
-            return `A major economic and cultural hub in ${stateData.name}.`;
-        }
-
-        // --- GLOBAL VARIABLES ---
         let svg, g, zoom, projection, path;
         let width, height;
         let currentTargetAbbr = "";
         let currentPhase = "MAP_SELECTION"; 
         let score = 0;
+        let cityStrikes = 0;
         let visited = new Set();
         let currentScale = 1;
 
-        // --- INITIALIZATION ---
         window.onload = initGame;
-        window.onresize = handleResize;
 
         async function initGame() {
             width = window.innerWidth;
             height = window.innerHeight;
-
             const container = d3.select("#map-stage");
-            svg = container.append("svg")
-                .attr("viewBox", `0 0 ${width} ${height}`)
-                .attr("preserveAspectRatio", "xMidYMid meet");
-            
+            svg = container.append("svg").attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMidYMid meet");
             g = svg.append("g");
-
-            // Setup Zoom
-            zoom = d3.zoom()
-                .scaleExtent([1, 12])
-                .on("zoom", (e) => {
-                    g.attr("transform", e.transform);
-                    currentScale = e.transform.k;
-                    // Keep city dots consistent size while zooming
-                    d3.selectAll(".city-node").attr("r", 6 / currentScale).attr("stroke-width", (2/currentScale));
-                });
+            zoom = d3.zoom().scaleExtent([1, 15]).on("zoom", (e) => {
+                g.attr("transform", e.transform);
+                currentScale = e.transform.k;
+                d3.selectAll(".city-node").attr("r", 6 / currentScale).attr("stroke-width", (2/currentScale));
+            });
             svg.call(zoom);
 
             try {
                 const us = await d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json");
                 const stateFeatures = topojson.feature(us, us.objects.states).features;
-
                 projection = d3.geoAlbersUsa().fitSize([width, height], topojson.feature(us, us.objects.states));
                 path = d3.geoPath().projection(projection);
 
-                const nameToAbbr = Object.entries(gameData).reduce((acc, [abbr, data]) => {
-                    acc[data.name] = abbr;
-                    return acc;
-                }, {});
+                const nameToAbbr = Object.entries(gameData).reduce((acc, [abbr, data]) => { acc[data.name] = abbr; return acc; }, {});
 
                 g.selectAll("path")
                     .data(stateFeatures)
@@ -355,212 +243,125 @@
                     })
                     .on("click", handleStateClick);
 
-                // Remove loader
-                d3.select("#loading").remove();
-                
                 startRound();
-
-            } catch (err) {
-                console.error(err);
-                d3.select("#loading").text("Error Loading Map Data");
-            }
+            } catch (err) { console.error(err); }
         }
-
-        function handleResize() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            d3.select("svg").attr("viewBox", `0 0 ${width} ${height}`);
-        }
-
-        // --- GAME LOGIC ---
 
         function startRound() {
-            // Find unvisited states
             const keys = Object.keys(gameData);
             const available = keys.filter(k => !visited.has(k));
-            
-            if (available.length === 0) {
-                alert("Mission Complete! Resetting...");
-                visited.clear();
-                score = 0;
-                document.getElementById("score-val").innerText = score;
-                startRound();
-                return;
-            }
+            if (available.length === 0) { alert("Game Complete!"); visited.clear(); score = 0; startRound(); return; }
 
             currentTargetAbbr = available[Math.floor(Math.random() * available.length)];
             visited.add(currentTargetAbbr);
-            const targetName = gameData[currentTargetAbbr].name;
-
-            // Reset UI
+            
             currentPhase = "MAP_SELECTION";
+            cityStrikes = 0;
+            updateStrikesUI();
             resetZoom();
             d3.selectAll(".state").classed("active-focused", false);
-            d3.selectAll(".city-node").remove(); 
+            d3.selectAll(".city-node").remove();
             document.getElementById("fact-overlay").classList.remove("show");
 
-            updatePrompt(`Locate ${targetName}`, "Select the state on the map");
-            document.getElementById("target-state").innerText = targetName;
+            updatePrompt(`Locate ${gameData[currentTargetAbbr].name}`, "Tap the state on the map");
+            document.getElementById("target-state").innerText = gameData[currentTargetAbbr].name;
         }
 
         function handleStateClick(event, d) {
-            const clickedId = this.id; 
+            if (currentPhase !== "MAP_SELECTION") return;
+            const clickedId = this.id;
             const clickedAbbr = clickedId ? clickedId.replace("state-", "") : null;
 
-            if (!clickedAbbr || !gameData[clickedAbbr]) return; 
-
-            if (currentPhase === "MAP_SELECTION") {
-                if (clickedAbbr === currentTargetAbbr) {
-                    flashState(this, "correct");
-                    transitionToCityPhase(d, clickedAbbr);
-                } else {
-                    flashState(this, "wrong");
-                    updatePrompt("Negative", "Try again");
-                }
+            if (clickedAbbr === currentTargetAbbr) {
+                flashState(this, "correct");
+                transitionToCityPhase(d, clickedAbbr);
+            } else {
+                flashState(this, "wrong");
+                const wrongName = gameData[clickedAbbr] ? gameData[clickedAbbr].name : "unknown territory";
+                updatePrompt("Negative", `That is ${wrongName}. Try again!`);
             }
         }
 
         function transitionToCityPhase(geoData, abbr) {
             currentPhase = "CITY_SELECTION";
-            
-            // 1. Zoom to State
             zoomToState(geoData);
             d3.select(`#state-${abbr}`).classed("active-focused", true);
-
-            // 2. Update UI
-            updatePrompt("Identify Capital", "Hover to scan, Click to select");
-
-            // 3. Plot Cities
+            updatePrompt("Strategic Target", `Find the Capital of ${gameData[abbr].name}`);
             plotCities(abbr);
         }
 
         function plotCities(abbr) {
             const data = gameData[abbr];
-            const cityEntries = Object.entries(data.cities);
-
-            const nodes = cityEntries.map(([name, coords]) => {
+            const nodes = Object.entries(data.cities).map(([name, coords]) => {
                 const projected = projection(coords);
-                // Handle cases where projection returns null (outside bounds)
                 return projected ? { name, x: projected[0], y: projected[1] } : null;
             }).filter(n => n);
 
-            g.selectAll(".city-node")
-                .data(nodes)
-                .enter().append("circle")
-                .attr("class", "city-node")
-                .attr("cx", d => d.x)
-                .attr("cy", d => d.y)
-                .attr("r", 0) 
-                .on("mouseover", showTooltip)
-                .on("mousemove", moveTooltip)
-                .on("mouseout", hideTooltip)
-                .on("click", (e, d) => handleCityClick(d, abbr))
-                .transition().duration(500).delay(300)
-                .attr("r", 6 / currentScale); 
+            g.selectAll(".city-node").data(nodes).enter().append("circle")
+                .attr("class", "city-node").attr("cx", d => d.x).attr("cy", d => d.y).attr("r", 0)
+                .on("mouseover", showTooltip).on("mousemove", moveTooltip).on("mouseout", hideTooltip)
+                .on("click", (e, d) => handleCityClick(e, d, abbr))
+                .transition().duration(500).delay(400).attr("r", 6 / currentScale);
         }
 
-        function handleCityClick(cityNode, abbr) {
+        function handleCityClick(event, cityNode, abbr) {
             const data = gameData[abbr];
             const isCorrect = cityNode.name === data.capital;
-            
-            // Visual feedback on the dot
             const dot = d3.select(event.currentTarget);
-            dot.classed(isCorrect ? "correct-choice" : "wrong-choice", true);
 
             if (isCorrect) {
-                score += 100;
+                dot.classed("correct-choice", true);
+                score += (100 - (cityStrikes * 30));
                 document.getElementById("score-val").innerText = score;
+                showFact(cityNode.name, abbr, "CORRECT", "status-correct");
+            } else {
+                dot.classed("wrong-choice", true);
+                cityStrikes++;
+                updateStrikesUI();
+                
+                if (cityStrikes >= 3) {
+                    showFact(cityNode.name, abbr, "MISSION FAILED", "status-wrong", true);
+                } else {
+                    showFact(cityNode.name, abbr, `WRONG (${cityStrikes}/3)`, "status-info");
+                }
             }
-
-            // Show Fact Modal
-            setTimeout(() => {
-                showFact(cityNode.name, abbr, isCorrect);
-            }, 400);
         }
 
-        // --- UI HELPERS ---
-
-        function showTooltip(event, d) {
-            const tt = document.getElementById("city-tooltip");
-            tt.innerText = d.name;
-            tt.style.opacity = 1;
-        }
-
-        function moveTooltip(event) {
-            const tt = document.getElementById("city-tooltip");
-            tt.style.left = event.pageX + "px";
-            tt.style.top = event.pageY + "px";
-        }
-
-        function hideTooltip() {
-            document.getElementById("city-tooltip").style.opacity = 0;
-        }
-
-        function showFact(cityName, abbr, isCorrect) {
+        function showFact(cityName, abbr, status, statusClass, failed = false) {
             const data = gameData[abbr];
             const overlay = document.getElementById("fact-overlay");
-            const statusEl = document.getElementById("fact-status");
-            const bodyEl = document.getElementById("fact-text");
+            const btn = document.getElementById("next-action-btn");
             
+            document.getElementById("fact-status").innerText = status;
+            document.getElementById("fact-status").className = `fact-status ${statusClass}`;
             document.getElementById("fact-city-name").innerText = cityName;
+            
+            let factText = data.facts[cityName] || "No data available for this sector.";
+            if (failed) factText += `<br><br>The capital was <b style="color:var(--neon-green)">${data.capital}</b>.`;
+            document.getElementById("fact-text").innerHTML = factText;
 
-            if (isCorrect) {
-                statusEl.innerText = "ACCESS GRANTED";
-                statusEl.className = "fact-status status-correct";
-                bodyEl.innerHTML = `${getFact(cityName, data)}`;
-            } else {
-                statusEl.innerText = "INCORRECT TARGET";
-                statusEl.className = "fact-status status-wrong";
-                bodyEl.innerHTML = `You selected ${cityName}.<br><br>The capital is <strong style="color:var(--neon-green)">${data.capital}</strong>.`;
-            }
+            btn.innerText = (status === "CORRECT" || failed) ? "Next Mission" : "Try Again";
+            btn.onclick = (status === "CORRECT" || failed) ? resetGameRound : () => overlay.classList.remove("show");
 
             overlay.classList.add("show");
         }
 
-        function resetGameRound() {
-            startRound();
-        }
-
-        // --- ZOOM & ANIMATION ---
+        function updateStrikesUI() { document.getElementById("strike-val").innerText = `${cityStrikes}/3`; }
+        function showTooltip(e, d) { const tt = document.getElementById("city-tooltip"); tt.innerText = d.name; tt.style.opacity = 1; }
+        function moveTooltip(e) { const tt = document.getElementById("city-tooltip"); tt.style.left = e.pageX + "px"; tt.style.top = e.pageY + "px"; }
+        function hideTooltip() { document.getElementById("city-tooltip").style.opacity = 0; }
+        function resetGameRound() { startRound(); }
 
         function zoomToState(d) {
-            const bounds = path.bounds(d);
-            const dx = bounds[1][0] - bounds[0][0];
-            const dy = bounds[1][1] - bounds[0][1];
-            const x = (bounds[0][0] + bounds[1][0]) / 2;
-            const y = (bounds[0][1] + bounds[1][1]) / 2;
-            
-            const scale = Math.max(1, Math.min(8, 0.6 / Math.max(dx / width, dy / height)));
-            const translate = [width / 2 - scale * x, height / 2 - scale * y];
-
-            svg.transition()
-                .duration(1000)
-                .call( zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale) );
+            const b = path.bounds(d);
+            const s = Math.max(1, Math.min(10, 0.7 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height)));
+            const t = [width / 2 - s * (b[0][0] + b[1][0]) / 2, height / 2 - s * (b[0][1] + b[1][1]) / 2];
+            svg.transition().duration(1000).call(zoom.transform, d3.zoomIdentity.translate(t[0], t[1]).scale(s));
         }
 
-        function resetZoom() {
-            svg.transition().duration(1000).call( zoom.transform, d3.zoomIdentity );
-        }
-
-        function flashState(element, type) {
-            const className = type === "correct" ? "correct-flash" : "wrong-flash";
-            d3.select(element).classed(className, true);
-            setTimeout(() => {
-                d3.select(element).classed(className, false);
-            }, 500);
-        }
-
-        function updatePrompt(main, sub) {
-            const mainEl = document.getElementById("main-prompt");
-            const subEl = document.getElementById("sub-prompt");
-            mainEl.classList.remove("visible");
-            setTimeout(() => {
-                mainEl.innerText = main;
-                subEl.innerText = sub;
-                mainEl.classList.add("visible");
-            }, 200);
-        }
-
+        function resetZoom() { svg.transition().duration(1000).call(zoom.transform, d3.zoomIdentity); }
+        function flashState(el, type) { d3.select(el).classed(type+"-flash", true); setTimeout(() => d3.select(el).classed(type+"-flash", false), 500); }
+        function updatePrompt(m, s) { document.getElementById("main-prompt").innerText = m; document.getElementById("sub-prompt").innerText = s; }
     </script>
 </body>
 </html>
