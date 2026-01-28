@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>US Geography Master | Sleek Map Quiz</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    
+    <style>
+        :root {
+            --bg-color: #121212;
+            --map-fill: #2c2c2c;
+            --map-stroke: #404040;
+            --highlight: #00d4ff;
+            --accent: #ff007a;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --glass: rgba(30, 30, 30, 0.85);
+            --correct: #00ff9d;
+            --wrong: #ff4d4d;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            margin: 20px 0 10px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        /* Layout */
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Map Styling */
+        #map-wrapper {
+            width: 100%;
+            height: 50vh; /* Adjust for mobile scrollability */
+            max-height: 600px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+        }
+
+        .state {
+            fill: var(--map-fill);
+            stroke: var(--map-stroke);
+            stroke-width: 0.5px;
+            transition: fill 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .state.active {
+            fill: var(--highlight);
+            stroke: #fff;
+            stroke-width: 1.5px;
+            filter: drop-shadow(0 0 5px var(--highlight));
+            z-index: 10;
+        }
+
+        /* Quiz UI */
+        #ui-layer {
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-top: -40px; /* Overlap map slightly */
+            z-index: 20;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 40px;
+        }
+
+        #question-text {
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .state-name {
+            color: var(--highlight);
+            font-weight: 700;
+        }
+
+        #options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media (min-width: 600px) {
+            #options-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .full-width { grid-column: span 2; }
+        }
+
+        button.option-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        button.option-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        button.option-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Feedback Modal/Overlay Styles */
+        .feedback-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .feedback-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .feedback-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .correct-text { color: var(--correct); }
+        .wrong-text { color: var(--wrong); }
+
+        .feedback-body {
+            font-size: 0.95rem;
+            color: #ddd;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        #next-btn {
+            background: var(--highlight);
+            color: #000;
+            font-weight: 700;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            box-shadow: 0 0 15px var(--highlight);
+        }
+
+        /* Scoreboard */
+        #score-board {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        /* Loader */
+        #loading {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Geo<span style="color:var(--highlight)">Master</span> USA</h1>
+
+    <div id="game-container">
+        <div id="map-wrapper">
+            <div id="loading">LOADING MAP DATA...</div>
+        </div>
+
+        <div id="ui-layer">
+            <div id="score-board">
+                <span id="score">Score: 0</span>
+                <span id="streak">Streak: 0</span>
+            </div>
+
+            <div id="quiz-content">
+                <div id="question-text">
+                    Select a state to begin, or wait for the auto-picker.
+                </div>
+                <div id="options-grid">
+                    <button class="option-btn full-width" onclick="startGame()">Start Quiz</button>
+                </div>
+            </div>
+
+            <div id="feedback" class="feedback-overlay">
+                <div class="feedback-title" id="fb-title"></div>
+                <div class="feedback-body" id="fb-body"></div>
+                <button id="next-btn" onclick="nextQuestion()">Next State</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATASET: 50 States, Capitals, Distractors, and Facts ---
+        const gameData = {
+            "AL": { name: "Alabama", capital: "Montgomery", cities: ["Birmingham", "Huntsville", "Mobile", "Tuscaloosa"], 
+                facts: { "Montgomery": "Known as the birthplace of the Civil Rights Movement.", "Birmingham": "Once the primary industrial center of the South, known as the 'Magic City'." } },
+            "AK": { name: "Alaska", capital: "Juneau", cities: ["Anchorage", "Fairbanks", "Sitka", "Ketchikan"], 
+                facts: { "Juneau": "The only US state capital accessible only by boat or plane.", "Anchorage": "Contains nearly 40% of the state's total population." } },
+            "AZ": { name: "Arizona", capital: "Phoenix", cities: ["Tucson", "Mesa", "Scottsdale", "Chandler"], 
+                facts: { "Phoenix": "The most populous state capital in the US.", "Tucson": "Home to the University of Arizona and surrounded by five mountain ranges." } },
+            "AR": { name: "Arkansas", capital: "Little Rock", cities: ["Fayetteville", "Fort Smith", "Springdale", "Jonesboro"], 
+                facts: { "Little Rock": "Named for a rock formation on the Arkansas River used as a landmark.", "Fayetteville": "Home to the University of Arkansas Razorbacks." } },
+            "CA": { name: "California", capital: "Sacramento", cities: ["Los Angeles", "San Francisco", "San Diego", "San Jose"], 
+                facts: { "Sacramento": "It became the capital in 1854 after the Gold Rush.", "Los Angeles": "The center of the nation's film and television industry.", "San Francisco": "Famous for the Golden Gate Bridge and tech innovation." } },
+            "CO": { name: "Colorado", capital: "Denver", cities: ["Colorado Springs", "Aurora", "Fort Collins", "Boulder"], 
+                facts: { "Denver": "The 'Mile High City' is exactly 5,280 feet above sea level.", "Colorado Springs": "Home to the US Air Force Academy and Pikes Peak." } },
+            "CT": { name: "Connecticut", capital: "Hartford", cities: ["Bridgeport", "New Haven", "Stamford", "Waterbury"], 
+                facts: { "Hartford": "Known as the 'Insurance Capital of the World'.", "New Haven": "Home to Yale University, founded in 1701." } },
+            "DE": { name: "Delaware", capital: "Dover", cities: ["Wilmington", "Newark", "Middletown", "Smyrna"], 
+                facts: { "Dover": "Home to the Dover Air Force Base and a major speedway.", "Wilmington": "The largest city in Delaware and a major corporate hub." } },
+            "FL": { name: "Florida", capital: "Tallahassee", cities: ["Miami", "Orlando", "Tampa", "Jacksonville"], 
+                facts: { "Tallahassee": "Chosen as the capital because it was halfway between Pensacola and St. Augustine.", "Miami": "A major center for finance, culture, and international trade.", "Orlando": "The 'Theme Park Capital of the World'." } },
+            "GA": { name: "Georgia", capital: "Atlanta", cities: ["Savannah", "Augusta", "Athens", "Macon"], 
+                facts: { "Atlanta": "Hosted the 1996 Olympics and is the birthplace of Coca-Cola.", "Savannah": "The oldest city in Georgia, famous for its historic squares." } },
+            "HI": { name: "Hawaii", capital: "Honolulu", cities: ["Hilo", "Kailua", "Kapolei", "Kaneohe"], 
+                facts: { "Honolulu": "Home to the only royal palace in the US, Iolani Palace.", "Hilo": "Known for its waterfalls and proximity to active volcanoes." } },
+            "ID": { name: "Idaho", capital: "Boise", cities: ["Meridian", "Nampa", "Idaho Falls", "Pocatello"], 
+                facts: { "Boise": "Often called the 'City of Trees'.", "Meridian": "One of the fastest-growing cities in the United States." } },
+            "IL": { name: "Illinois", capital: "Springfield", cities: ["Chicago", "Aurora", "Naperville", "Joliet"], 
+                facts: { "Springfield": "The home of Abraham Lincoln before he became President.", "Chicago": "The third-largest city in the US, famous for its architecture." } },
+            "IN": { name: "Indiana", capital: "Indianapolis", cities: ["Fort Wayne", "Evansville", "South Bend", "Carmel"], 
+                facts: { "Indianapolis": "Hosts the Indy 500, the largest single-day sporting event.", "South Bend": "Famous as the home of the University of Notre Dame." } },
+            "IA": { name: "Iowa", capital: "Des Moines", cities: ["Cedar Rapids", "Davenport", "Sioux City", "Iowa City"], 
+                facts: { "Des Moines": "A major center for the US insurance industry.", "Iowa City": "A UNESCO City of Literature and former state capital." } },
+            "KS": { name: "Kansas", capital: "Topeka", cities: ["Wichita", "Overland Park", "Kansas City", "Olathe"], 
+                facts: { "Topeka": "The name means 'a good place to dig potatoes' in Kansa-Osage.", "Wichita": "Known as the 'Air Capital of the World' for its aircraft industry." } },
+            "KY": { name: "Kentucky", capital: "Frankfort", cities: ["Louisville", "Lexington", "Bowling Green", "Owensboro"], 
+                facts: { "Frankfort": "One of the smallest state capitals by population.", "Louisville": "Home to the Kentucky Derby and Louisville Slugger bats." } },
+            "LA": { name: "Louisiana", capital: "Baton Rouge", cities: ["New Orleans", "Shreveport", "Lafayette", "Lake Charles"], 
+                facts: { "Baton Rouge": "The name comes from the French for 'Red Stick'.", "New Orleans": "World-famous for Mardi Gras, jazz music, and Creole cuisine." } },
+            "ME": { name: "Maine", capital: "Augusta", cities: ["Portland", "Lewiston", "Bangor", "South Portland"], 
+                facts: { "Augusta": "The easternmost state capital in the US.", "Portland": "The state's economic hub, known for its historic Old Port." } },
+            "MD": { name: "Maryland", capital: "Annapolis", cities: ["Baltimore", "Columbia", "Germantown", "Silver Spring"], 
+                facts: { "Annapolis": "Served as the temporary capital of the US in 1783-1784.", "Baltimore": "The largest city in Maryland, famous for its Inner Harbor." } },
+            "MA": { name: "Massachusetts", capital: "Boston", cities: ["Worcester", "Springfield", "Cambridge", "Lowell"], 
+                facts: { "Boston": "One of the oldest cities in the US, founded in 1630.", "Cambridge": "Home to Harvard University and MIT." } },
+            "MI": { name: "Michigan", capital: "Lansing", cities: ["Detroit", "Grand Rapids", "Warren", "Sterling Heights"], 
+                facts: { "Lansing": "The only state capital located in a township of the same name.", "Detroit": "Known as the 'Motor City' for its automotive history." } },
+            "MN": { name: "Minnesota", capital: "Saint Paul", cities: ["Minneapolis", "Rochester", "Duluth", "Bloomington"], 
+                facts: { "Saint Paul": "Forms the 'Twin Cities' with neighboring Minneapolis.", "Minneapolis": "The state's largest city, known for its chain of lakes." } },
+            "MS": { name: "Mississippi", capital: "Jackson", cities: ["Gulfport", "Southaven", "Biloxi", "Hattiesburg"], 
+                facts: { "Jackson": "Sits atop an extinct volcano (the Jackson Volcano).", "Biloxi": "A major center for the casino and seafood industries." } },
+            "MO": { name: "Missouri", capital: "Jefferson City", cities: ["Kansas City", "St. Louis", "Springfield", "Columbia"], 
+                facts: { "Jefferson City": "Named after Thomas Jefferson, the third US President.", "St. Louis": "Known for the Gateway Arch and its blues music scene." } },
+            "MT": { name: "Montana", capital: "Helena", cities: ["Billings", "Missoula", "Great Falls", "Bozeman"], 
+                facts: { "Helena": "Founded as a gold camp during the Montana Gold Rush.", "Billings": "The largest city in Montana, nicknamed the 'Magic City'." } },
+            "NE": { name: "Nebraska", capital: "Lincoln", cities: ["Omaha", "Bellevue", "Grand Island", "Kearney"], 
+                facts: { "Lincoln": "Home to the only unicameral (one-house) state legislature.", "Omaha": "Famous for its steaks and Warren Buffett (Berkshire Hathaway)." } },
+            "NV": { name: "Nevada", capital: "Carson City", cities: ["Las Vegas", "Henderson", "Reno", "North Las Vegas"], 
+                facts: { "Carson City": "An independent city, not part of any county.", "Las Vegas": "The 'Entertainment Capital of the World', famous for its Strip." } },
+            "NH": { name: "New Hampshire", capital: "Concord", cities: ["Manchester", "Nashua", "Derry", "Dover"], 
+                facts: { "Concord": "Known for its granite quarries and the State House.", "Manchester": "The largest city in northern New England." } },
+            "NJ": { name: "New Jersey", capital: "Trenton", cities: ["Newark", "Jersey City", "Paterson", "Elizabeth"], 
+                facts: { "Trenton": "Site of George Washington's first military victory after crossing the Delaware.", "Newark": "The state's largest city and a major air/shipping hub." } },
+            "NM": { name: "New Mexico", capital: "Santa Fe", cities: ["Albuquerque", "Las Cruces", "Rio Rancho", "Roswell"], 
+                facts: { "Santa Fe": "The highest state capital in the US (7,199 ft) and the oldest (founded 1610).", "Albuquerque": "Famous for the International Balloon Fiesta." } },
+            "NY": { name: "New York", capital: "Albany", cities: ["New York City", "Buffalo", "Rochester", "Yonkers"], 
+                facts: { "Albany": "One of the oldest surviving settlements from the original 13 colonies.", "New York City": "The most populous city in the US and a global financial hub." } },
+            "NC": { name: "North Carolina", capital: "Raleigh", cities: ["Charlotte", "Greensboro", "Durham", "Winston-Salem"], 
+                facts: { "Raleigh": "Known as the 'City of Oaks' for its many oak trees.", "Charlotte": "A major US banking center and home to NASCAR." } },
+            "ND": { name: "North Dakota", capital: "Bismarck", cities: ["Fargo", "Grand Forks", "Minot", "West Fargo"], 
+                facts: { "Bismarck": "Named after German Chancellor Otto von Bismarck to attract German investment.", "Fargo": "The largest city in the state, famous from the movie/show 'Fargo'." } },
+            "OH": { name: "Ohio", capital: "Columbus", cities: ["Cleveland", "Cincinnati", "Toledo", "Akron"], 
+                facts: { "Columbus": "One of the fastest-growing large cities in the Midwest.", "Cleveland": "Home to the Rock and Roll Hall of Fame." } },
+            "OK": { name: "Oklahoma", capital: "Oklahoma City", cities: ["Tulsa", "Norman", "Broken Arrow", "Lawton"], 
+                facts: { "Oklahoma City": "Features one of the world's largest livestock markets.", "Tulsa": "Historically known as the 'Oil Capital of the World'." } },
+            "OR": { name: "Oregon", capital: "Salem", cities: ["Portland", "Eugene", "Gresham", "Hillsboro"], 
+                facts: { "Salem": "The capitol building features a gold-plated pioneer statue on top.", "Portland": "Famous for its counter-culture, coffee, and bridges." } },
+            "PA": { name: "Pennsylvania", capital: "Harrisburg", cities: ["Philadelphia", "Pittsburgh", "Allentown", "Erie"], 
+                facts: { "Harrisburg": "Played a critical role in the Civil War and the Industrial Revolution.", "Philadelphia": "The birthplace of the United States, where the Declaration was signed." } },
+            "RI": { name: "Rhode Island", capital: "Providence", cities: ["Warwick", "Cranston", "Pawtucket", "East Providence"], 
+                facts: { "Providence": "One of the oldest cities in the US, founded by Roger Williams.", "Newport": "Famous for its Gilded Age mansions." } },
+            "SC": { name: "South Carolina", capital: "Columbia", cities: ["Charleston", "North Charleston", "Mount Pleasant", "Rock Hill"], 
+                facts: { "Columbia": "The first planned city in the US, named after Christopher Columbus.", "Charleston": "Renowned for its well-preserved architecture and history." } },
+            "SD": { name: "South Dakota", capital: "Pierre", cities: ["Sioux Falls", "Rapid City", "Aberdeen", "Brookings"], 
+                facts: { "Pierre": "Pronounced 'Peer', it is the second-least populous state capital.", "Sioux Falls": "Named for the cascades of the Big Sioux River." } },
+            "TN": { name: "Tennessee", capital: "Nashville", cities: ["Memphis", "Knoxville", "Chattanooga", "Clarksville"], 
+                facts: { "Nashville": "Known worldwide as 'Music City', the center of country music.", "Memphis": "The home of the Blues and Elvis Presley's Graceland." } },
+            "TX": { name: "Texas", capital: "Austin", cities: ["Houston", "San Antonio", "Dallas", "Fort Worth"], 
+                facts: { "Austin": "The 'Live Music Capital of the World' and a major tech hub.", "Houston": "Home to NASA's Johnson Space Center.", "San Antonio": "Famous for The Alamo." } },
+            "UT": { name: "Utah", capital: "Salt Lake City", cities: ["West Valley City", "Provo", "West Jordan", "Orem"], 
+                facts: { "Salt Lake City": "Founded by Mormon pioneers in 1847.", "Provo": "Home to Brigham Young University." } },
+            "VT": { name: "Vermont", capital: "Montpelier", cities: ["Burlington", "South Burlington", "Rutland", "Barre"], 
+                facts: { "Montpelier": "The least populous state capital in the US (under 8,000 people).", "Burlington": "The state's largest city, located on Lake Champlain." } },
+            "VA": { name: "Virginia", capital: "Richmond", cities: ["Virginia Beach", "Norfolk", "Chesapeake", "Arlington"], 
+                facts: { "Richmond": "Served as the capital of the Confederacy during the Civil War.", "Virginia Beach": "A resort city with the longest pleasure beach in the world." } },
+            "WA": { name: "Washington", capital: "Olympia", cities: ["Seattle", "Spokane", "Tacoma", "Vancouver"], 
+                facts: { "Olympia": "Located at the southern end of Puget Sound.", "Seattle": "Home to Amazon, Starbucks, and the Space Needle." } },
+            "WV": { name: "West Virginia", capital: "Charleston", cities: ["Huntington", "Morgantown", "Parkersburg", "Wheeling"], 
+                facts: { "Charleston": "The capitol dome is covered in real gold leaf.", "Morgantown": "Home to West Virginia University." } },
+            "WI": { name: "Wisconsin", capital: "Madison", cities: ["Milwaukee", "Green Bay", "Kenosha", "Racine"], 
+                facts: { "Madison": "Built on an isthmus between Lake Monona and Lake Mendota.", "Milwaukee": "Famous for its brewing traditions and breweries." } },
+            "WY": { name: "Wyoming", capital: "Cheyenne", cities: ["Casper", "Laramie", "Gillette", "Rock Springs"], 
+                facts: { "Cheyenne": "Named for the Cheyenne Native American nation.", "Casper": "Known as the 'Oil City' due to its history in the oil industry." } }
+        };
+
+        // Default facts for when specific ones aren't listed
+        function getFact(city, state) {
+            if (gameData[state].facts && gameData[state].facts[city]) {
+                return gameData[state].facts[city];
+            }
+            if (city === gameData[state].capital) {
+                return `${city} is the political center of ${gameData[state].name}.`;
+            }
+            return `${city} is a major cultural and economic hub in ${gameData[state].name}.`;
+        }
+
+        // --- GAME LOGIC ---
+        let svg, g, path, states;
+        let currentState = null;
+        let score = 0;
+        let streak = 0;
+        let visitedStates = new Set();
+        const width = 960;
+        const height = 600;
+
+        // Init D3 Map
+        async function initMap() {
+            const container = d3.select("#map-wrapper");
+            
+            svg = container.append("svg")
+                .attr("viewBox", `0 0 ${width} ${height}`)
+                .attr("preserveAspectRatio", "xMidYMid meet");
+            
+            g = svg.append("g");
+
+            try {
+                // Fetch TopoJSON
+                const us = await d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json");
+                const stateFeatures = topojson.feature(us, us.objects.states).features;
+                
+                // Add State Abbreviations to features
+                // (The us-atlas uses FIPS IDs. We need a map or lookup, but simpler: use name matching if possible)
+                // For this demo, we use a simple ID mapping or rely on name if available.
+                // The TopoJSON properties usually have 'name'. We need to map Name -> Abbr.
+                const nameToAbbr = Object.entries(gameData).reduce((acc, [abbr, data]) => {
+                    acc[data.name] = abbr;
+                    return acc;
+                }, {});
+
+                states = g.selectAll("path")
+                    .data(stateFeatures)
+                    .enter().append("path")
+                    .attr("d", d3.geoPath())
+                    .attr("class", "state")
+                    .attr("id", d => {
+                        const abbr = nameToAbbr[d.properties.name];
+                        return abbr ? `state-${abbr}` : null;
+                    })
+                    .on("click", handleMapClick);
+
+                // Remove loading text
+                d3.select("#loading").remove();
+                
+            } catch (error) {
+                console.error(error);
+                d3.select("#loading").text("Error loading map data.");
+            }
+        }
+
+        function handleMapClick(event, d) {
+            // Only allow clicking if we are not in a modal state
+            // Logic handled by game controller mostly
+        }
+
+        // Game Controller
+        function startGame() {
+            score = 0;
+            streak = 0;
+            visitedStates.clear();
+            updateScore();
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            // Hide feedback
+            d3.select("#feedback").classed("show", false);
+            
+            // Pick random unvisited state
+            const keys = Object.keys(gameData);
+            const available = keys.filter(k => !visitedStates.has(k));
+            
+            if (available.length === 0) {
+                // Game Over / Reset
+                alert(`Game Over! Final Score: ${score}/50`);
+                startGame();
+                return;
+            }
+
+            const nextKey = available[Math.floor(Math.random() * available.length)];
+            visitedStates.add(nextKey);
+            currentState = nextKey;
+
+            // Highlight Map
+            highlightState(currentState);
+
+            // Generate UI
+            generateQuestion(currentState);
+        }
+
+        function highlightState(abbr) {
+            // Reset all
+            d3.selectAll(".state").classed("active", false);
+            
+            const stateEl = d3.select(`#state-${abbr}`);
+            if (!stateEl.empty()) {
+                stateEl.classed("active", true);
+                
+                // Zoom logic (Simple Translation)
+                // In a robust app, we'd use d3.zoom. Here we keep it simple to avoid complexity bugs.
+                // We just highlight for visual cue.
+            }
+        }
+
+        function generateQuestion(abbr) {
+            const data = gameData[abbr];
+            const qBox = document.getElementById("question-text");
+            qBox.innerHTML = `What is the capital of <span class="state-name">${data.name}</span>?`;
+
+            const grid = document.getElementById("options-grid");
+            grid.innerHTML = "";
+
+            // Create options array (Capital + 4 Random from cities list)
+            // Note: Data has capital + 4 cities fixed. We shuffle them.
+            let options = [data.capital, ...data.cities];
+            options = shuffleArray(options);
+
+            options.forEach(city => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = city;
+                btn.onclick = () => handleGuess(city, abbr);
+                grid.appendChild(btn);
+            });
+        }
+
+        function handleGuess(selectedCity, stateAbbr) {
+            const data = gameData[stateAbbr];
+            const isCorrect = selectedCity === data.capital;
+            
+            // Update Stats
+            if (isCorrect) {
+                score++;
+                streak++;
+            } else {
+                streak = 0;
+            }
+            updateScore();
+
+            // Show Feedback
+            const fbOverlay = document.getElementById("feedback");
+            const fbTitle = document.getElementById("fb-title");
+            const fbBody = document.getElementById("fb-body");
+
+            if (isCorrect) {
+                fbTitle.innerHTML = `<span class="correct-text">Correct!</span>`;
+                fbBody.innerHTML = `
+                    <p><strong>${selectedCity}</strong> is indeed the capital of ${data.name}.</p>
+                    <p><em>${getFact(selectedCity, stateAbbr)}</em></p>
+                `;
+            } else {
+                fbTitle.innerHTML = `<span class="wrong-text">Wrong!</span>`;
+                fbBody.innerHTML = `
+                    <p>You selected <strong>${selectedCity}</strong>.</p>
+                    <p><em>${getFact(selectedCity, stateAbbr)}</em></p>
+                    <hr style="border-color:rgba(255,255,255,0.1); margin:15px 0;">
+                    <p>The correct capital is <strong class="correct-text">${data.capital}</strong>.</p>
+                    <p><em>${getFact(data.capital, stateAbbr)}</em></p>
+                `;
+            }
+
+            fbOverlay.classList.add("show");
+        }
+
+        function updateScore() {
+            document.getElementById("score").innerText = `Score: ${score}`;
+            document.getElementById("streak").innerText = `Streak: ${streak}`;
+        }
+
+        // Utils
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Start
+        initMap();
+
+    </script>
+</body>
+</html>
