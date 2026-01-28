@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Donlon Maps</title>
+    <title>US GeoMaster | Tactical Translucent Edition</title>
     
     <link rel="icon" href="icon_0.jpg" type="image/jpeg">
 
@@ -13,20 +13,20 @@
     <style>
         :root {
             --bg-deep: #050505;
-            --map-stroke: #333;
+            --map-stroke: rgba(255, 255, 255, 0.15);
             --neon-blue: #00f3ff;
             --neon-pink: #ff0055;
             --neon-green: #00ff9d;
             --neon-amber: #ffaa00;
-            --glass: rgba(10, 10, 10, 0.9);
+            --glass: rgba(15, 15, 15, 0.85);
             --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             
-            /* Regional Colors */
-            --c-southwest: #ff9999; /* Light Red */
-            --c-western: #99ff99;   /* Light Green */
-            --c-northeast: #99ccff; /* Light Blue */
-            --c-midwest: #ffcc99;   /* Light Orange */
-            --c-southeast: #d2b48c; /* Light Brown */
+            /* Regional Colors (RGBA for Translucency) */
+            --c-southwest: rgba(255, 153, 153, 0.25); /* Translucent Red */
+            --c-western: rgba(153, 255, 153, 0.25);   /* Translucent Green */
+            --c-northeast: rgba(153, 204, 255, 0.25); /* Translucent Blue */
+            --c-midwest: rgba(255, 204, 153, 0.25);   /* Translucent Orange */
+            --c-southeast: rgba(210, 180, 140, 0.25); /* Translucent Brown */
         }
 
         body {
@@ -46,7 +46,7 @@
         .state {
             stroke: var(--map-stroke);
             stroke-width: 0.5px;
-            transition: opacity 0.3s ease;
+            transition: fill 0.3s ease, opacity 0.3s ease, stroke-width 0.2s;
             vector-effect: non-scaling-stroke;
         }
 
@@ -57,18 +57,19 @@
         .reg-midwest { fill: var(--c-midwest); }
         .reg-southeast { fill: var(--c-southeast); }
 
-        .state:hover { opacity: 0.8; }
+        .state:hover { opacity: 0.8; stroke: rgba(255,255,255,0.4); stroke-width: 1px; }
         .state.active-focused { opacity: 1; stroke: #fff; stroke-width: 2px; }
 
+        /* Flash effects adjusted for translucency */
         .state.correct-flash { animation: flashSuccess 0.5s forwards; }
         .state.wrong-flash { animation: flashError 0.5s forwards; }
 
-        @keyframes flashSuccess { 0% { fill: var(--neon-green); } 100% { fill: inherit; } }
-        @keyframes flashError { 0% { fill: var(--neon-pink); } 100% { fill: inherit; } }
+        @keyframes flashSuccess { 0% { fill: var(--neon-green); opacity: 1; } 100% { fill: inherit; opacity: 0.25; } }
+        @keyframes flashError { 0% { fill: var(--neon-pink); opacity: 1; } 100% { fill: inherit; opacity: 0.25; } }
 
         .city-node {
             fill: var(--neon-blue);
-            stroke: rgba(0, 243, 255, 0.25);
+            stroke: rgba(0, 243, 255, 0.2);
             stroke-width: 5px; 
             cursor: pointer;
             transition: all 0.3s ease;
@@ -85,16 +86,15 @@
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             background: var(--glass); border: 1px solid rgba(255,255,255,0.1);
             padding: 10px 30px; border-radius: 50px; display: flex; gap: 40px;
-            backdrop-filter: blur(10px); z-index: 10;
+            backdrop-filter: blur(15px); z-index: 10;
         }
 
-        /* Center Alignment Logic for Header */
-        .hud-group { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
-        .hud-item { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
-        .hud-val { color: var(--neon-blue); font-weight: bold; font-size: 1.1rem; }
+        .hud-group { display: flex; flex-direction: column; align-items: center; min-width: 70px; }
+        .hud-item { font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; }
+        .hud-val { color: var(--neon-blue); font-weight: 800; font-size: 1.2rem; text-shadow: 0 0 10px rgba(0, 243, 255, 0.4); }
 
-        #prompt-container { position: absolute; top: 15%; width: 100%; text-align: center; text-shadow: 0 5px 20px black; }
-        #main-prompt { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0; transition: all 0.4s; }
+        #prompt-container { position: absolute; top: 15%; width: 100%; text-align: center; text-shadow: 0 5px 25px black; }
+        #main-prompt { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0; transition: all 0.4s; letter-spacing: 1px; }
         #sub-prompt { font-size: 1.1rem; color: var(--neon-blue); margin-top: 8px; letter-spacing: 1px; line-height: 1.4; }
 
         .wrong-state-highlight { color: var(--neon-amber); text-decoration: underline; font-weight: 800; }
@@ -108,7 +108,7 @@
 
         #fact-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(15px); z-index: 100; display: flex;
+            backdrop-filter: blur(20px); z-index: 100; display: flex;
             justify-content: center; align-items: center; opacity: 0;
             pointer-events: none; transition: opacity 0.3s;
         }
@@ -116,24 +116,25 @@
 
         .fact-card {
             background: #111; border: 2px solid var(--neon-blue); border-radius: 20px;
-            padding: 40px; max-width: 480px; width: 90%; text-align: center;
-            box-shadow: 0 0 60px rgba(0, 243, 255, 0.2);
+            padding: 45px; max-width: 500px; width: 92%; text-align: center;
+            box-shadow: 0 0 70px rgba(0, 243, 255, 0.15);
         }
 
-        .fact-status { font-weight: 800; letter-spacing: 3px; margin-bottom: 10px; font-size: 1.1rem; text-transform: uppercase; }
+        .fact-status { font-weight: 800; letter-spacing: 4px; margin-bottom: 12px; font-size: 1.1rem; text-transform: uppercase; }
         .status-correct { color: var(--neon-green); }
         .status-wrong { color: var(--neon-pink); }
         .status-info { color: var(--neon-amber); }
         
-        .fact-city { font-size: 2.5rem; margin: 0 0 15px; color: white; font-weight: 900; }
-        .fact-body { color: #eee; line-height: 1.6; margin-bottom: 30px; font-size: 1.1rem; }
+        .fact-city { font-size: 2.6rem; margin: 0 0 15px; color: white; font-weight: 900; }
+        .fact-body { color: #ddd; line-height: 1.7; margin-bottom: 35px; font-size: 1.1rem; }
 
         .next-btn {
             background: var(--neon-blue); color: #000; border: none;
-            padding: 15px 40px; font-weight: 800; border-radius: 40px;
+            padding: 16px 45px; font-weight: 800; border-radius: 40px;
             cursor: pointer; text-transform: uppercase; transition: 0.2s;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
         }
-        .next-btn:hover { background: white; transform: scale(1.05); }
+        .next-btn:hover { background: white; transform: scale(1.05); box-shadow: 0 0 30px rgba(255,255,255,0.4); }
 
     </style>
 </head>
@@ -187,7 +188,7 @@
             "IA": { name: "Iowa", region: "midwest", capital: "Des Moines", cities: { "Des Moines": [-93.6091, 41.6005], "Cedar Rapids": [-91.6656, 41.9779], "Davenport": [-90.5776, 41.5236], "Sioux City": [-96.4103, 42.4999], "Iowa City": [-91.5302, 41.6611] }, facts: { "Des Moines": "A major global center for the insurance industry.", "Cedar Rapids": "Only US city with government offices on an island.", "Davenport": "Largest city on the MS River without a permanent floodwall.", "Sioux City": "Historic site of the Lewis and Clark expedition.", "Iowa City": "UNESCO City of Literature and the first capital of IA." } },
             "KS": { name: "Kansas", region: "midwest", capital: "Topeka", cities: { "Topeka": [-95.6890, 39.0473], "Wichita": [-97.3301, 37.6872], "Overland Park": [-94.6708, 38.9822], "Kansas City": [-94.6274, 39.1140], "Lawrence": [-95.2353, 38.9717] }, facts: { "Topeka": "Site of the Brown v. Board of Education landmark case.", "Wichita": "Air Capital of the World for its aircraft manufacturing.", "Overland Park": "Consistently ranked among the best places to live in the US.", "Kansas City": "World-famous for its unique style of barbecue.", "Lawrence": "Founded as an abolitionist stronghold in 1854." } },
             "KY": { name: "Kentucky", region: "southeast", capital: "Frankfort", cities: { "Frankfort": [-84.8705, 38.2009], "Louisville": [-85.7585, 38.2527], "Lexington": [-84.5037, 38.0406], "Bowling Green": [-86.4436, 36.9685], "Owensboro": [-87.1181, 37.7719] }, facts: { "Frankfort": "Smallest US capital on a major river (the Kentucky).", "Louisville": "Home of the Kentucky Derby and Muhammad Ali.", "Lexington": "The Bluegrass heart and Horse Capital of the World.", "Bowling Green": "Where every Chevrolet Corvette is manufactured.", "Owensboro": "The world's capital for mutton-based barbecue." } },
-            "LA": { name: "Louisiana", region: "southeast", capital: "Baton Rouge", cities: { "Baton Rouge": [-91.1403, 30.4583], "New Orleans": [-90.0715, 29.9511], "Shreveport": [-93.7502, 32.5252], "Lafayette": [-92.0198, 30.2241], "Lake Charles": [-93.2174, 30.2265] }, facts: { "Baton Rouge": "French for 'Red Stick', marking hunting boundaries.", "New Orleans": "The birthplace of Jazz and world-class Creole cuisine.", "Shreveport": "Former capital of LA during the Civil War.", "Lafayette": "The cultural hub of the Cajun and Zydeco world.", "Lake Charles": "Festival capital of LA with 75+ yearly events." } },
+            "LA": { name: "Louisiana", region: "southeast", capital: "Baton Rouge", cities: { "Baton Rouge": [-91.1403, 30.4583], "New Orleans": [-90.0715, 29.9511], "Shreveport": [-93.7502, 32.5252], "Lafayette": [-92.0198, 30.2241], "Lake Charles": [-93.2174, 30.2265] }, facts: { "Baton Rouge": "French for 'Red Stick', marking hunting boundaries.", "New Orleans": "The birthplace of Jazz and world-class Creole cuisine.", "Shreveport": "Former capital of LA during the Civil War.", "Lafayette": "The cultural hub of the Cajun and Zydeco the world.", "Lake Charles": "Festival capital of LA with 75+ yearly events." } },
             "ME": { name: "Maine", region: "northeast", capital: "Augusta", cities: { "Augusta": [-69.7795, 44.3106], "Portland": [-70.2568, 43.6591], "Lewiston": [-70.2148, 44.1004], "Bangor": [-68.7778, 44.8016], "Auburn": [-70.2312, 44.0979] }, facts: { "Augusta": "The easternmost state capital in the US.", "Portland": "Historic seaport with iconic lighthouse views.", "Lewiston": "Site of the 1965 Ali-Liston heavyweight title fight.", "Bangor": "Home to Stephen King and a giant Paul Bunyan statue.", "Auburn": "Formerly a major global center for shoe manufacturing." } },
             "MD": { name: "Maryland", region: "northeast", capital: "Annapolis", cities: { "Annapolis": [-76.4922, 38.9784], "Baltimore": [-76.6122, 39.2904], "Frederick": [-77.4105, 39.4143], "Gaithersburg": [-77.1944, 39.1434], "Ocean City": [-75.0849, 38.3365] }, facts: { "Annapolis": "Served as the nation's temporary capital (1783-84).", "Baltimore": "Birthplace of the Star-Spangled Banner.", "Frederick": "Home to the National Museum of Civil War Medicine.", "Gaithersburg": "A major science and biotech hub for the East Coast.", "Ocean City": "Famous for its historic wooden boardwalk and beach." } },
             "MA": { name: "Massachusetts", region: "northeast", capital: "Boston", cities: { "Boston": [-71.0589, 42.3601], "Worcester": [-71.8023, 42.2626], "Springfield": [-72.5898, 42.1015], "Cambridge": [-71.1097, 42.3736], "Lowell": [-71.3162, 42.6334] }, facts: { "Boston": "Home to the nation's first public park and subway.", "Worcester": "Birthplace of the liquid fuel rocket.", "Springfield": "The birthplace of basketball and Dr. Seuss.", "Cambridge": "Home to Harvard, the oldest US university (1636).", "Lowell": "The cradle of the American Industrial Revolution." } },
@@ -222,7 +223,6 @@
             "WY": { name: "Wyoming", region: "western", capital: "Cheyenne", cities: { "Cheyenne": [-104.8202, 41.1400], "Casper": [-106.3252, 42.8666], "Laramie": [-105.5911, 41.3114], "Gillette": [-105.5022, 44.2911], "Rock Springs": [-109.2321, 41.5875] }, facts: { "Cheyenne": "Magic City of the Plains; home to the world's largest outdoor rodeo.", "Casper": "Strategic hub for Wyoming's oil and energy sectors.", "Laramie": "Home to the University of Wyoming, the state's only university.", "Gillette": "The Energy Capital of the Nation for its massive coal reserves.", "Rock Springs": "Known for having residents of 56 different nationalities." } }
         };
 
-        // UI Logic Variables
         let svg, g, zoom, projection, path;
         let width, height;
         let currentTargetAbbr = "";
