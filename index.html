@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>US Geography Master | Sleek Map Quiz</title>
+    
+    <link rel="icon" href="icon_0.jpg" type="image/jpeg">
+
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/topojson-client@3"></script>
     
@@ -150,7 +153,7 @@
         .feedback-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -398,9 +401,6 @@
                 const stateFeatures = topojson.feature(us, us.objects.states).features;
                 
                 // Add State Abbreviations to features
-                // (The us-atlas uses FIPS IDs. We need a map or lookup, but simpler: use name matching if possible)
-                // For this demo, we use a simple ID mapping or rely on name if available.
-                // The TopoJSON properties usually have 'name'. We need to map Name -> Abbr.
                 const nameToAbbr = Object.entries(gameData).reduce((acc, [abbr, data]) => {
                     acc[data.name] = abbr;
                     return acc;
@@ -427,8 +427,7 @@
         }
 
         function handleMapClick(event, d) {
-            // Only allow clicking if we are not in a modal state
-            // Logic handled by game controller mostly
+            // Interactive clicks disabled during quiz mode to prevent cheating/confusion
         }
 
         // Game Controller
@@ -449,7 +448,6 @@
             const available = keys.filter(k => !visitedStates.has(k));
             
             if (available.length === 0) {
-                // Game Over / Reset
                 alert(`Game Over! Final Score: ${score}/50`);
                 startGame();
                 return;
@@ -473,10 +471,6 @@
             const stateEl = d3.select(`#state-${abbr}`);
             if (!stateEl.empty()) {
                 stateEl.classed("active", true);
-                
-                // Zoom logic (Simple Translation)
-                // In a robust app, we'd use d3.zoom. Here we keep it simple to avoid complexity bugs.
-                // We just highlight for visual cue.
             }
         }
 
@@ -489,7 +483,6 @@
             grid.innerHTML = "";
 
             // Create options array (Capital + 4 Random from cities list)
-            // Note: Data has capital + 4 cities fixed. We shuffle them.
             let options = [data.capital, ...data.cities];
             options = shuffleArray(options);
 
