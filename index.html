@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>US GeoMaster | Tactical Education Edition</title>
+    <title>US GeoMaster | Refined Edition</title>
     
     <link rel="icon" href="icon_0.jpg" type="image/jpeg">
 
@@ -56,13 +56,14 @@
 
         .city-node {
             fill: var(--neon-blue);
-            stroke: rgba(0, 243, 255, 0.3);
-            stroke-width: 10px;
+            stroke: rgba(0, 243, 255, 0.25);
+            stroke-width: 5px; /* Reduced by 50% */
             cursor: pointer;
             transition: all 0.3s ease;
+            pointer-events: none; /* Controlled via JS to prevent mobile auto-tap */
         }
 
-        .city-node:hover { fill: #fff; stroke: var(--neon-blue); stroke-width: 15px; }
+        .city-node:hover { fill: #fff; stroke: var(--neon-blue); stroke-width: 8px; }
         .city-node.wrong-choice { fill: var(--neon-pink); stroke: var(--neon-pink); pointer-events: none; opacity: 0.6; }
         .city-node.correct-choice { fill: var(--neon-green); stroke: var(--neon-green); }
 
@@ -71,7 +72,7 @@
         #top-hud {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             background: var(--glass); border: 1px solid rgba(255,255,255,0.1);
-            padding: 10px 30px; border-radius: 50px; display: flex; gap: 20px;
+            padding: 10px 30px; border-radius: 50px; display: flex; gap: 30px;
             backdrop-filter: blur(10px); z-index: 10;
         }
 
@@ -128,7 +129,6 @@
     <div id="ui-layer">
         <div id="top-hud">
             <div><span class="hud-item">Target</span> <span id="target-state" class="hud-val">---</span></div>
-            <div><span class="hud-item">Strikes</span> <span id="strike-val" class="hud-val">0/3</span></div>
             <div><span class="hud-item">Score</span> <span id="score-val" class="hud-val">0</span></div>
         </div>
         <div id="prompt-container">
@@ -147,6 +147,7 @@
     </div>
 
     <script>
+        // Full Dataset
         const gameData = {
             "AL": { name: "Alabama", capital: "Montgomery", cities: { "Montgomery": [-86.3077, 32.3792], "Birmingham": [-86.8104, 33.5186], "Mobile": [-88.0399, 30.6954], "Huntsville": [-86.5861, 34.7304], "Tuscaloosa": [-87.5692, 33.2098] }, facts: { "Montgomery": "Capital since 1846, it was the first capital of the Confederacy.", "Birmingham": "The 'Pittsburgh of the South' due to its massive iron and steel industry.", "Mobile": "The only saltwater port in Alabama and the site of the first US Mardi Gras.", "Huntsville": "The 'Rocket City' where NASA developed the Saturn V rockets.", "Tuscaloosa": "Named after Chief Tuskaloosa, it is the home of the University of Alabama." } },
             "AK": { name: "Alaska", capital: "Juneau", cities: { "Juneau": [-134.4197, 58.3019], "Anchorage": [-149.9003, 61.2181], "Fairbanks": [-147.7164, 64.8378], "Sitka": [-135.3300, 57.0531], "Ketchikan": [-131.6461, 55.3422] }, facts: { "Juneau": "No roads connect this capital to the rest of the state; you must arrive by air or sea.", "Anchorage": "Nearly 40% of Alaska's population lives in this city.", "Fairbanks": "Known as the Golden Heart City, it's one of the best spots to view the Northern Lights.", "Sitka": "It was the capital of Russian America before Alaska was sold to the US.", "Ketchikan": "The 'Salmon Capital of the World' and home to the world's largest collection of totem poles." } },
@@ -257,7 +258,6 @@
             
             currentPhase = "MAP_SELECTION";
             cityStrikes = 0;
-            updateStrikesUI();
             resetZoom();
             d3.selectAll(".state").classed("active-focused", false);
             d3.selectAll(".city-node").remove();
@@ -288,6 +288,11 @@
             d3.select(`#state-${abbr}`).classed("active-focused", true);
             updatePrompt("Strategic Target", `Find the Capital of ${gameData[abbr].name}`);
             plotCities(abbr);
+
+            // FIX: Prevent accidental auto-selection on touch screens
+            setTimeout(() => {
+                d3.selectAll(".city-node").style("pointer-events", "auto");
+            }, 800);
         }
 
         function plotCities(abbr) {
@@ -317,12 +322,11 @@
             } else {
                 dot.classed("wrong-choice", true);
                 cityStrikes++;
-                updateStrikesUI();
                 
                 if (cityStrikes >= 3) {
                     showFact(cityNode.name, abbr, "MISSION FAILED", "status-wrong", true);
                 } else {
-                    showFact(cityNode.name, abbr, `WRONG (${cityStrikes}/3)`, "status-info");
+                    showFact(cityNode.name, abbr, "NOT THE CAPITAL", "status-info");
                 }
             }
         }
@@ -346,7 +350,6 @@
             overlay.classList.add("show");
         }
 
-        function updateStrikesUI() { document.getElementById("strike-val").innerText = `${cityStrikes}/3`; }
         function showTooltip(e, d) { const tt = document.getElementById("city-tooltip"); tt.innerText = d.name; tt.style.opacity = 1; }
         function moveTooltip(e) { const tt = document.getElementById("city-tooltip"); tt.style.left = e.pageX + "px"; tt.style.top = e.pageY + "px"; }
         function hideTooltip() { document.getElementById("city-tooltip").style.opacity = 0; }
