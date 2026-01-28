@@ -6,11 +6,9 @@
     <title>Maps Quiz</title>
     
     <link rel="icon" href="icon_0.jpg" type="image/jpeg">
-    
     <link rel="apple-touch-icon" href="icon_0.jpg">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Maps Quiz">
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/topojson-client@3"></script>
@@ -26,7 +24,6 @@
             --glass: rgba(15, 15, 15, 0.85);
             --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             
-            /* Regional Colors (40% Opacity) */
             --c-southwest: rgba(255, 153, 153, 0.40);
             --c-western: rgba(153, 255, 153, 0.40);
             --c-northeast: rgba(153, 204, 255, 0.40);
@@ -35,29 +32,14 @@
         }
 
         body {
-            margin: 0;
-            background-color: var(--bg-deep);
-            color: white;
-            font-family: var(--font-main);
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-            user-select: none;
-            touch-action: none;
-            /* Added top padding to bring page down */
-            padding-top: 40px; 
-            box-sizing: border-box;
+            margin: 0; background-color: var(--bg-deep); color: white;
+            font-family: var(--font-main); overflow: hidden; height: 100vh;
+            width: 100vw; user-select: none; touch-action: none; padding-top: 40px; box-sizing: border-box;
         }
 
         #map-stage { width: 100%; height: calc(100% - 40px); cursor: crosshair; }
 
-        .state {
-            stroke: var(--map-stroke);
-            stroke-width: 0.5px;
-            transition: fill 0.3s ease, opacity 0.3s ease;
-            vector-effect: non-scaling-stroke;
-        }
-
+        .state { stroke: var(--map-stroke); stroke-width: 0.5px; transition: fill 0.3s, opacity 0.3s; vector-effect: non-scaling-stroke; }
         .reg-southwest { fill: var(--c-southwest); }
         .reg-western { fill: var(--c-western); }
         .reg-northeast { fill: var(--c-northeast); }
@@ -69,19 +51,10 @@
 
         .state.correct-flash { animation: flashSuccess 0.5s forwards; }
         .state.wrong-flash { animation: flashError 0.5s forwards; }
-
         @keyframes flashSuccess { 0% { fill: var(--neon-green); opacity: 1; } 100% { fill: inherit; opacity: 0.25; } }
         @keyframes flashError { 0% { fill: var(--neon-pink); opacity: 1; } 100% { fill: inherit; opacity: 0.25; } }
 
-        .city-node {
-            fill: var(--neon-blue);
-            stroke: rgba(0, 243, 255, 0.2);
-            stroke-width: 5px; 
-            cursor: pointer;
-            transition: all 0.3s ease;
-            pointer-events: none; 
-        }
-
+        .city-node { fill: var(--neon-blue); stroke: rgba(0, 243, 255, 0.2); stroke-width: 5px; cursor: pointer; transition: all 0.3s; pointer-events: none; }
         .city-node:hover { fill: #fff; stroke: var(--neon-blue); stroke-width: 8px; }
         .city-node.wrong-choice { fill: var(--neon-pink); stroke: var(--neon-pink); pointer-events: none; opacity: 0.6; }
         .city-node.correct-choice { fill: var(--neon-green); stroke: var(--neon-green); }
@@ -89,57 +62,47 @@
         #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 
         #top-hud {
-            /* Adjusted for increased top padding */
             position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
             background: var(--glass); border: 1px solid rgba(255,255,255,0.1);
             padding: 10px 30px; border-radius: 50px; display: flex; gap: 40px;
-            backdrop-filter: blur(15px); z-index: 10;
+            backdrop-filter: blur(15px); z-index: 10; pointer-events: auto;
         }
 
         .hud-group { display: flex; flex-direction: column; align-items: center; min-width: 70px; }
         .hud-item { font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; }
         .hud-val { color: var(--neon-blue); font-weight: 800; font-size: 1.2rem; }
 
-        #prompt-container { position: absolute; top: 22%; width: 100%; text-align: center; text-shadow: 0 5px 25px black; }
-        #main-prompt { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0; transition: all 0.4s; letter-spacing: 1px; }
-        #sub-prompt { font-size: 1.1rem; color: var(--neon-blue); margin-top: 8px; letter-spacing: 1px; line-height: 1.4; }
+        /* Toggle Button Styling */
+        .toggle-container { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .toggle-switch { width: 40px; height: 20px; background: #333; border-radius: 20px; position: relative; transition: 0.3s; border: 1px solid #444; }
+        .toggle-knob { width: 16px; height: 16px; background: white; border-radius: 50%; position: absolute; top: 1px; left: 2px; transition: 0.3s; }
+        .active .toggle-switch { background: var(--neon-blue); }
+        .active .toggle-knob { left: 21px; }
+
+        #prompt-container { position: absolute; top: 22%; width: 100%; text-align: center; text-shadow: 0 5px 25px black; padding: 0 20px; box-sizing: border-box; }
+        #find-label { font-size: 1.2rem; text-transform: uppercase; color: #888; letter-spacing: 4px; margin: 0; }
+        #main-prompt { font-size: 1.8rem; font-weight: 900; margin: 5px 0 0; transition: all 0.4s; letter-spacing: 0.5px; line-height: 1.3; }
+        #sub-prompt { font-size: 1.1rem; color: var(--neon-blue); margin-top: 8px; letter-spacing: 1px; }
 
         .wrong-state-highlight { color: var(--neon-amber); font-weight: 800; }
 
-        #city-tooltip {
-            position: absolute; background: rgba(0,0,0,0.9); border: 1px solid var(--neon-blue);
-            color: white; padding: 5px 12px; border-radius: 4px; font-size: 0.85rem;
-            pointer-events: none; opacity: 0; transform: translate(-50%, -150%);
-            white-space: nowrap; z-index: 50;
-        }
+        #city-tooltip { position: absolute; background: rgba(0,0,0,0.9); border: 1px solid var(--neon-blue); color: white; padding: 5px 12px; border-radius: 4px; font-size: 0.85rem; pointer-events: none; opacity: 0; transform: translate(-50%, -150%); white-space: nowrap; z-index: 50; }
 
-        #fact-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(20px); z-index: 100; display: flex;
-            justify-content: center; align-items: center; opacity: 0;
-            pointer-events: none; transition: opacity 0.3s;
-        }
+        #fact-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); z-index: 100; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         #fact-overlay.show { opacity: 1; pointer-events: auto; }
-
-        .fact-card {
-            background: #111; border: 2px solid var(--neon-blue); border-radius: 20px;
-            padding: 45px; max-width: 500px; width: 92%; text-align: center;
-        }
-
+        .fact-card { background: #111; border: 2px solid var(--neon-blue); border-radius: 20px; padding: 45px; max-width: 500px; width: 92%; text-align: center; }
         .fact-status { font-weight: 800; letter-spacing: 4px; margin-bottom: 12px; font-size: 1.1rem; text-transform: uppercase; }
         .status-correct { color: var(--neon-green); }
         .status-wrong { color: var(--neon-pink); }
-        
         .fact-city { font-size: 2.6rem; margin: 0 0 15px; color: white; font-weight: 900; }
         .fact-body { color: #ddd; line-height: 1.7; margin-bottom: 35px; font-size: 1.1rem; }
-
-        .next-btn {
-            background: var(--neon-blue); color: #000; border: none;
-            padding: 16px 45px; font-weight: 800; border-radius: 40px;
-            cursor: pointer; text-transform: uppercase; transition: 0.2s;
-        }
+        .next-btn { background: var(--neon-blue); color: #000; border: none; padding: 16px 45px; font-weight: 800; border-radius: 40px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
         .next-btn:hover { background: white; transform: scale(1.05); }
 
+        @media (max-width: 600px) {
+            #top-hud { gap: 20px; padding: 10px 20px; }
+            #main-prompt { font-size: 1.4rem; }
+        }
     </style>
 </head>
 <body>
@@ -157,9 +120,16 @@
                 <span class="hud-item">Score</span>
                 <span id="score-val" class="hud-val">0</span>
             </div>
+            <div class="hud-group toggle-container active" id="mode-toggle" onclick="toggleMode()">
+                <span class="hud-item" id="mode-label">Capital</span>
+                <div class="toggle-switch">
+                    <div class="toggle-knob"></div>
+                </div>
+            </div>
         </div>
         <div id="prompt-container">
-            <h1 id="main-prompt">Initializing Satellite...</h1>
+            <p id="find-label">Initializing...</p>
+            <h1 id="main-prompt">Connecting Satellite...</h1>
             <div id="sub-prompt"></div>
         </div>
     </div>
@@ -182,14 +152,14 @@
             "CA": { name: "California", region: "western", capital: "Sacramento", cities: { "Sacramento": [-121.4944, 38.5816], "Los Angeles": [-118.2437, 34.0522], "San Francisco": [-122.4194, 37.7749], "San Diego": [-117.1611, 32.7157], "San Jose": [-121.8863, 37.3382] }, facts: { "Sacramento": "The terminus of the First Transcontinental Railroad and a key 1849 Gold Rush hub.", "Los Angeles": "The second most populous US city and a global capital for the media industry.", "San Francisco": "A financial center built on a peninsula, famous for its steep hills and fog.", "San Diego": "Home to the Pacific Fleet and a major center for oceanographic research.", "San Jose": "The technological heart of Silicon Valley and the original capital of the state." } },
             "CO": { name: "Colorado", region: "western", capital: "Denver", cities: { "Denver": [-104.9903, 39.7392], "Colorado Springs": [-104.8214, 38.8339], "Aurora": [-104.8319, 39.7294], "Fort Collins": [-105.0844, 40.5853], "Boulder": [-105.2705, 40.0150] }, facts: { "Denver": "Founded during the Pikes Peak Gold Rush, it sits exactly one mile above sea level.", "Colorado Springs": "Base of the US Air Force Academy and a hub for high-altitude athletic training.", "Aurora": "A major modern transportation and medical research hub for the Rocky Mountains.", "Fort Collins": "Leading center for agricultural research and water resource management.", "Boulder": "Nestled at the base of the Flatirons, it is a global center for climate research." } },
             "CT": { name: "Connecticut", region: "northeast", capital: "Hartford", cities: { "Hartford": [-72.6734, 41.7658], "Bridgeport": [-73.1894, 41.1792], "New Haven": [-72.9279, 41.3083], "Stamford": [-73.5387, 41.0534], "Waterbury": [-73.0454, 41.5582] }, facts: { "Hartford": "Known as the Insurance Capital of the World since the early 1800s.", "Bridgeport": "The largest city in the state, originally a 19th-century manufacturing powerhouse.", "New Haven": "Home to Yale University and the birthplace of the modern planned city layout.", "Stamford": "Major regional financial hub within the Greater New York metropolitan area.", "Waterbury": "Known as the 'Brass City' for its historical dominance in metal manufacturing." } },
-            "DE": { name: "Delaware", region: "northeast", capital: "Dover", cities: { "Dover": [-75.5297, 39.1582], "Wilmington": [-75.5484, 39.7447], "Newark": [-75.7497, 39.6837], "Middletown": [-75.7163, 39.4496], "Smyrna": [-75.6049, 39.2998] }, facts: { "Dover": "Founded in 1683, it serves as a major military and legal center.", "Wilmington": "A national hub for corporate law and the domestic chemical industry.", "Newark": "Home to the University of Delaware.", "Middletown": "Fast-growing town known for its historic downtown area.", "Smyrna": "A historic shipping town named after a famous Biblical city in the Aegean." } },
+            "DE": { name: "Delaware", region: "northeast", capital: "Dover", cities: { "Dover": [-75.5297, 39.1582], "Wilmington": [-75.5484, 39.7447], "Newark": [-75.7497, 39.6837], "Middletown": [-75.7163, 39.4496], "Smyrna": [-75.6049, 39.2998] }, facts: { "Dover": "Founded in 1683, it serves as a major military and legal center.", "Wilmington": "A national hub for corporate law and the domestic chemical industry.", "Newark": "Major educational center and formerly home to a large automotive plant.", "Middletown": "Transitioned from a rural agricultural village to a fast-growing tech suburb.", "Smyrna": "A historic shipping town named after a famous Biblical city in the Aegean." } },
             "FL": { name: "Florida", region: "southeast", capital: "Tallahassee", cities: { "Tallahassee": [-84.2807, 30.4383], "Miami": [-80.1918, 25.7617], "Orlando": [-81.3792, 28.5383], "Tampa": [-82.4572, 27.9506], "Jacksonville": [-81.6557, 30.3322] }, facts: { "Tallahassee": "Located on the Red Hills, it was chosen as capital for being halfway between older ports.", "Miami": "A major center for international finance and the 'Gateway to the Americas'.", "Orlando": "World-famous tourism hub with an economy built on theme parks and hospitality.", "Tampa": "Major deep-water port on the Gulf of Mexico and center for the cigar industry.", "Jacksonville": "The largest US city by land area and a major military and logistics port." } },
             "GA": { name: "Georgia", region: "southeast", capital: "Atlanta", cities: { "Atlanta": [-84.3880, 33.7490], "Savannah": [-81.0998, 32.0809], "Augusta": [-81.9748, 33.4735], "Macon": [-83.6324, 32.8407], "Columbus": [-84.9901, 32.4610] }, facts: { "Atlanta": "International transport hub and the headquarters for many Fortune 500 companies.", "Savannah": "The first capital of Georgia, famous for its historic British-colonial layout.", "Augusta": "Strategic city on the Savannah River and host of the Masters golf tournament.", "Macon": "A center for music history and the heart of Georgia's agricultural region.", "Columbus": "Industrial city home to Fort Moore, one of the Army's largest training bases." } },
             "HI": { name: "Hawaii", region: "western", capital: "Honolulu", cities: { "Honolulu": [-157.8583, 21.3069], "Hilo": [-155.0844, 19.7297], "Kailua": [-157.7394, 21.4022], "Kapolei": [-158.0772, 21.3328], "Lihue": [-159.3711, 21.9811] }, facts: { "Honolulu": "Home to Iolani Palace, the only royal palace on US soil.", "Hilo": "Known for its proximity to active volcanoes and heavy tropical rainfall.", "Kailua": "A windward city famous for marine conservation and pristine beaches.", "Kapolei": "Designed as Oahu's 'Second City' to decentralize government from Honolulu.", "Lihue": "The administrative heart of the island of Kauai." } },
             "ID": { name: "Idaho", region: "western", capital: "Boise", cities: { "Boise": [-116.2023, 43.6150], "Meridian": [-116.3915, 43.6121], "Nampa": [-116.5635, 43.5407], "Idaho Falls": [-112.0340, 43.4917], "Pocatello": [-112.4506, 42.8666] }, facts: { "Boise": "A center for high-tech industry and the hub of the Treasure Valley.", "Meridian": "One of the fastest-growing cities in the US, known for its service economy.", "Nampa": "A food processing hub located in the middle of a rich agricultural valley.", "Idaho Falls": "Center for nuclear energy research and the gateway to the Snake River.", "Pocatello": "A major historical railway crossroads between Utah and the Pacific." } },
             "IL": { name: "Illinois", region: "midwest", capital: "Springfield", cities: { "Springfield": [-89.6501, 39.7817], "Chicago": [-87.6298, 41.8781], "Aurora": [-88.3156, 41.7606], "Rockford": [-89.0939, 42.2711], "Joliet": [-88.0817, 41.5250] }, facts: { "Springfield": "The burial place of Abraham Lincoln and a center for Illinois state politics.", "Chicago": "The historic heart of US rail and commodity trading on the Great Lakes.", "Aurora": "One of the first US cities to adopt an all-electric street lighting system.", "Rockford": "A major industrial city with an economy driven by aerospace manufacturing.", "Joliet": "A historic canal town and the site of the first US Dairy Queen." } },
             "IN": { name: "Indiana", region: "midwest", capital: "Indianapolis", cities: { "Indianapolis": [-86.1581, 39.7684], "Fort Wayne": [-85.1394, 41.0793], "Evansville": [-87.5711, 37.9716], "South Bend": [-86.2520, 41.6764], "Gary": [-87.3464, 41.5940] }, facts: { "Indianapolis": "Features more war memorials than any US city except Washington, D.C.", "Fort Wayne": "Established as a military fort to control travel on the Great Lakes system.", "Evansville": "Commercial hub for the Ohio River region and southern Indiana.", "South Bend": "Historic center for the American automotive industry (Studebaker).", "Gary": "Founded in 1906 by US Steel, it was once a model industrial city." } },
-            "IA": { name: "Iowa", region: "midwest", capital: "Des Moines", cities: { "Des Moines": [-93.6091, 41.6005], "Cedar Rapids": [-91.6656, 41.9779], "Davenport": [-90.5776, 41.5236], "Sioux City": [-96.4103, 42.4999], "Iowa City": [-91.5302, 41.6611] }, facts: { "Des Moines": "A global epicenter for the insurance industry and agricultural finance.", "Cedar Rapids": "Home to Quaker Oats, one of the world's largest cereal milling plants.", "Davenport": "One of the 'Quad Cities' and a major manufacturing hub on the Mississippi.", "Sioux City": "Key historical river port for travel across the Great Plains.", "Iowa City": "The original state capital and home to the renowned Iowa Writers' Workshop." } },
+            "IA": { name: "Iowa", region: "midwest", capital: "Des Moines", cities: { "Des Moines": [-93.6091, 41.6005], "Cedar Rapids": [-91.6656, 41.9779], "Davenport": [-90.5776, 41.5236], "Sioux City": [-96.4103, 42.4999], "Iowa City": [-91.5302, 41.6611] }, facts: { "Des Moines": "A global epicenter for the insurance industry and agricultural finance.", "Cedar Rapids": "Only US city with government offices on an island.", "Davenport": "Largest city on the MS River without a permanent floodwall.", "Sioux City": "Key historical river port for travel across the Great Plains.", "Iowa City": "The original state capital and home to the renowned Iowa Writers' Workshop." } },
             "KS": { name: "Kansas", region: "midwest", capital: "Topeka", cities: { "Topeka": [-95.6890, 39.0473], "Wichita": [-97.3301, 37.6872], "Overland Park": [-94.6708, 38.9822], "Kansas City": [-94.6274, 39.1140], "Lawrence": [-95.2353, 38.9717] }, facts: { "Topeka": "Site of the 1954 Supreme Court case that ended legal school segregation.", "Wichita": "The 'Air Capital of the World' due to its aircraft manufacturing history.", "Overland Park": "A major corporate service hub for the Kansas City metropolitan area.", "Kansas City": "A center for logistics, rail transport, and famous Midwestern barbecue.", "Lawrence": "A city founded by abolitionists to ensure Kansas became a free state." } },
             "KY": { name: "Kentucky", region: "southeast", capital: "Frankfort", cities: { "Frankfort": [-84.8705, 38.2009], "Louisville": [-85.7585, 38.2527], "Lexington": [-84.5037, 38.0406], "Bowling Green": [-86.4436, 36.9685], "Owensboro": [-87.1181, 37.7719] }, facts: { "Frankfort": "The fourth smallest US capital, divided by the scenic Kentucky River.", "Louisville": "Strategic Ohio River port and birthplace of the Kentucky Derby.", "Lexington": "Located in the heart of the Bluegrass region, the Horse Capital of the World.", "Bowling Green": "Home to the manufacturing plant for the iconic Chevrolet Corvette.", "Owensboro": "A major river port and center for the state's agriculture and barbecue." } },
             "LA": { name: "Louisiana", region: "southeast", capital: "Baton Rouge", cities: { "Baton Rouge": [-91.1403, 30.4583], "New Orleans": [-90.0715, 29.9511], "Shreveport": [-93.7502, 32.5252], "Lafayette": [-92.0198, 30.2241], "Lake Charles": [-93.2174, 30.2265] }, facts: { "Baton Rouge": "French for 'Red Stick,' it is a major industrial hub on the Mississippi.", "New Orleans": "One of the world's most historic ports and the birthplace of Jazz.", "Shreveport": "A strategic river city located at the crossroads of Texas, Louisiana, and Arkansas.", "Lafayette": "The cultural heart of Louisiana's Cajun and Creole heritage.", "Lake Charles": "Major center for the petrochemical industry and Louisiana's gaming sector." } },
@@ -232,9 +202,10 @@
         let currentTargetAbbr = "";
         let currentPhase = "MAP_SELECTION"; 
         let score = 0;
-        let cityStrikes = 0;
         let visited = new Set();
         let currentScale = 1;
+        let isCapitalMode = true;
+        let targetCityName = "";
 
         window.onload = initGame;
 
@@ -278,6 +249,20 @@
             } catch (err) { console.error(err); }
         }
 
+        function toggleMode() {
+            if (currentPhase === "CITY_SELECTION") return; // Prevent switching mid-quiz
+            isCapitalMode = !isCapitalMode;
+            const container = document.getElementById('mode-toggle');
+            const label = document.getElementById('mode-label');
+            if (isCapitalMode) {
+                container.classList.add('active');
+                label.innerText = 'Capital';
+            } else {
+                container.classList.remove('active');
+                label.innerText = 'Fact';
+            }
+        }
+
         function startRound() {
             const keys = Object.keys(gameData);
             const available = keys.filter(k => !visited.has(k));
@@ -287,13 +272,13 @@
             visited.add(currentTargetAbbr);
             
             currentPhase = "MAP_SELECTION";
-            cityStrikes = 0;
             resetZoom();
             d3.selectAll(".state").classed("active-focused", false);
             d3.selectAll(".city-node").remove();
             document.getElementById("fact-overlay").classList.remove("show");
 
-            updatePrompt(`Locate ${gameData[currentTargetAbbr].name}`, "Tap the state on the map");
+            document.getElementById("find-label").innerText = "Find State";
+            document.getElementById("main-prompt").innerText = gameData[currentTargetAbbr].name;
             document.getElementById("target-state").innerText = currentTargetAbbr;
             updateScoreUI();
         }
@@ -304,17 +289,17 @@
             const clickedAbbr = clickedId ? clickedId.replace("state-", "") : null;
 
             if (clickedAbbr === currentTargetAbbr) {
-                score += 10; 
-                updateScoreUI();
+                score += 10; updateScoreUI();
                 flashState(this, "correct");
                 transitionToCityPhase(d, clickedAbbr);
             } else {
-                score -= 10; 
-                updateScoreUI();
+                score -= 10; updateScoreUI();
                 flashState(this, "wrong");
                 const wrongName = gameData[clickedAbbr] ? gameData[clickedAbbr].name : "unknown territory";
                 const targetName = gameData[currentTargetAbbr].name;
-                updatePrompt(`Find ${targetName}`, `That is <span class="wrong-state-highlight">${wrongName}</span>`);
+                document.getElementById("find-label").innerText = "Find";
+                document.getElementById("main-prompt").innerHTML = `${targetName}`;
+                document.getElementById("sub-prompt").innerHTML = `That is <span class="wrong-state-highlight">${wrongName}</span>`;
             }
         }
 
@@ -322,12 +307,24 @@
             currentPhase = "CITY_SELECTION";
             zoomToState(geoData);
             d3.select(`#state-${abbr}`).classed("active-focused", true);
-            updatePrompt("Strategic Target", `Find the Capital of ${gameData[abbr].name}`);
+            
+            const data = gameData[abbr];
+            document.getElementById("find-label").innerText = "Find";
+            
+            if (isCapitalMode) {
+                targetCityName = data.capital;
+                document.getElementById("main-prompt").innerText = `The capital of ${data.name}`;
+            } else {
+                // Pick a random city from the 5 available for this state
+                const cityNames = Object.keys(data.cities);
+                targetCityName = cityNames[Math.floor(Math.random() * cityNames.length)];
+                document.getElementById("main-prompt").innerText = data.facts[targetCityName];
+            }
+            
+            document.getElementById("sub-prompt").innerText = "Hover dots to scan, click to select";
             plotCities(abbr);
 
-            setTimeout(() => {
-                d3.selectAll(".city-node").style("pointer-events", "auto");
-            }, 800);
+            setTimeout(() => { d3.selectAll(".city-node").style("pointer-events", "auto"); }, 800);
         }
 
         function plotCities(abbr) {
@@ -346,20 +343,17 @@
 
         function handleCityClick(event, cityNode, abbr) {
             const data = gameData[abbr];
-            const isCorrect = cityNode.name === data.capital;
+            const isCorrect = cityNode.name === targetCityName;
             const dot = d3.select(event.currentTarget);
 
             if (isCorrect) {
                 dot.classed("correct-choice", true);
-                score += 10; 
-                updateScoreUI();
+                score += 10; updateScoreUI();
                 showFact(cityNode.name, abbr, "CORRECT", "status-correct");
             } else {
                 dot.classed("wrong-choice", true);
-                score -= 10; 
-                updateScoreUI();
-                cityStrikes++;
-                showFact(cityNode.name, abbr, "NOT THE CAPITAL", "status-wrong");
+                score -= 10; updateScoreUI();
+                showFact(cityNode.name, abbr, "INCORRECT", "status-wrong");
             }
         }
 
@@ -371,20 +365,15 @@
             document.getElementById("fact-status").innerText = status;
             document.getElementById("fact-status").className = `fact-status ${statusClass}`;
             document.getElementById("fact-city-name").innerText = cityName;
-            
-            let factText = data.facts[cityName] || "No data available for this sector.";
-            document.getElementById("fact-text").innerHTML = factText;
+            document.getElementById("fact-text").innerHTML = data.facts[cityName];
 
-            btn.innerText = (status === "CORRECT") ? "Next Mission" : "Try Again";
+            btn.innerText = (status === "CORRECT") ? "Next Mission" : "Keep Searching";
             btn.onclick = (status === "CORRECT") ? resetGameRound : () => overlay.classList.remove("show");
 
             overlay.classList.add("show");
         }
 
-        function updateScoreUI() {
-            document.getElementById("score-val").innerText = score;
-        }
-
+        function updateScoreUI() { document.getElementById("score-val").innerText = score; }
         function showTooltip(e, d) { const tt = document.getElementById("city-tooltip"); tt.innerText = d.name; tt.style.opacity = 1; }
         function moveTooltip(e) { const tt = document.getElementById("city-tooltip"); tt.style.left = e.pageX + "px"; tt.style.top = e.pageY + "px"; }
         function hideTooltip() { document.getElementById("city-tooltip").style.opacity = 0; }
@@ -399,7 +388,6 @@
 
         function resetZoom() { svg.transition().duration(1000).call(zoom.transform, d3.zoomIdentity); }
         function flashState(el, type) { d3.select(el).classed(type+"-flash", true); setTimeout(() => d3.select(el).classed(type+"-flash", false), 500); }
-        function updatePrompt(m, s) { document.getElementById("main-prompt").innerHTML = m; document.getElementById("sub-prompt").innerHTML = s; }
     </script>
 </body>
 </html>
