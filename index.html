@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Maps Quiz</title>
     
     <link rel="icon" href="icon_0.jpg" type="image/jpeg">
+    
+    <link rel="apple-touch-icon" href="icon_0.jpg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Maps Quiz">
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/topojson-client@3"></script>
@@ -39,9 +44,12 @@
             width: 100vw;
             user-select: none;
             touch-action: none;
+            /* Added top padding to bring page down */
+            padding-top: 40px; 
+            box-sizing: border-box;
         }
 
-        #map-stage { width: 100%; height: 100%; cursor: crosshair; }
+        #map-stage { width: 100%; height: calc(100% - 40px); cursor: crosshair; }
 
         .state {
             stroke: var(--map-stroke);
@@ -81,7 +89,8 @@
         #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 
         #top-hud {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            /* Adjusted for increased top padding */
+            position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
             background: var(--glass); border: 1px solid rgba(255,255,255,0.1);
             padding: 10px 30px; border-radius: 50px; display: flex; gap: 40px;
             backdrop-filter: blur(15px); z-index: 10;
@@ -91,7 +100,7 @@
         .hud-item { font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; }
         .hud-val { color: var(--neon-blue); font-weight: 800; font-size: 1.2rem; }
 
-        #prompt-container { position: absolute; top: 15%; width: 100%; text-align: center; text-shadow: 0 5px 25px black; }
+        #prompt-container { position: absolute; top: 22%; width: 100%; text-align: center; text-shadow: 0 5px 25px black; }
         #main-prompt { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0; transition: all 0.4s; letter-spacing: 1px; }
         #sub-prompt { font-size: 1.1rem; color: var(--neon-blue); margin-top: 8px; letter-spacing: 1px; line-height: 1.4; }
 
@@ -173,7 +182,7 @@
             "CA": { name: "California", region: "western", capital: "Sacramento", cities: { "Sacramento": [-121.4944, 38.5816], "Los Angeles": [-118.2437, 34.0522], "San Francisco": [-122.4194, 37.7749], "San Diego": [-117.1611, 32.7157], "San Jose": [-121.8863, 37.3382] }, facts: { "Sacramento": "The terminus of the First Transcontinental Railroad and a key 1849 Gold Rush hub.", "Los Angeles": "The second most populous US city and a global capital for the media industry.", "San Francisco": "A financial center built on a peninsula, famous for its steep hills and fog.", "San Diego": "Home to the Pacific Fleet and a major center for oceanographic research.", "San Jose": "The technological heart of Silicon Valley and the original capital of the state." } },
             "CO": { name: "Colorado", region: "western", capital: "Denver", cities: { "Denver": [-104.9903, 39.7392], "Colorado Springs": [-104.8214, 38.8339], "Aurora": [-104.8319, 39.7294], "Fort Collins": [-105.0844, 40.5853], "Boulder": [-105.2705, 40.0150] }, facts: { "Denver": "Founded during the Pikes Peak Gold Rush, it sits exactly one mile above sea level.", "Colorado Springs": "Base of the US Air Force Academy and a hub for high-altitude athletic training.", "Aurora": "A major modern transportation and medical research hub for the Rocky Mountains.", "Fort Collins": "Leading center for agricultural research and water resource management.", "Boulder": "Nestled at the base of the Flatirons, it is a global center for climate research." } },
             "CT": { name: "Connecticut", region: "northeast", capital: "Hartford", cities: { "Hartford": [-72.6734, 41.7658], "Bridgeport": [-73.1894, 41.1792], "New Haven": [-72.9279, 41.3083], "Stamford": [-73.5387, 41.0534], "Waterbury": [-73.0454, 41.5582] }, facts: { "Hartford": "Known as the Insurance Capital of the World since the early 1800s.", "Bridgeport": "The largest city in the state, originally a 19th-century manufacturing powerhouse.", "New Haven": "Home to Yale University and the birthplace of the modern planned city layout.", "Stamford": "Major regional financial hub within the Greater New York metropolitan area.", "Waterbury": "Known as the 'Brass City' for its historical dominance in metal manufacturing." } },
-            "DE": { name: "Delaware", region: "northeast", capital: "Dover", cities: { "Dover": [-75.5297, 39.1582], "Wilmington": [-75.5484, 39.7447], "Newark": [-75.7497, 39.6837], "Middletown": [-75.7163, 39.4496], "Smyrna": [-75.6049, 39.2998] }, facts: { "Dover": "Founded in 1683, it serves as a major military and legal center.", "Wilmington": "A national hub for corporate law and the domestic chemical industry.", "Newark": "Major educational center and formerly home to a large automotive plant.", "Middletown": "Transitioned from a rural agricultural village to a fast-growing tech suburb.", "Smyrna": "A historic shipping town named after a famous Biblical city in the Aegean." } },
+            "DE": { name: "Delaware", region: "northeast", capital: "Dover", cities: { "Dover": [-75.5297, 39.1582], "Wilmington": [-75.5484, 39.7447], "Newark": [-75.7497, 39.6837], "Middletown": [-75.7163, 39.4496], "Smyrna": [-75.6049, 39.2998] }, facts: { "Dover": "Founded in 1683, it serves as a major military and legal center.", "Wilmington": "A national hub for corporate law and the domestic chemical industry.", "Newark": "Home to the University of Delaware.", "Middletown": "Fast-growing town known for its historic downtown area.", "Smyrna": "A historic shipping town named after a famous Biblical city in the Aegean." } },
             "FL": { name: "Florida", region: "southeast", capital: "Tallahassee", cities: { "Tallahassee": [-84.2807, 30.4383], "Miami": [-80.1918, 25.7617], "Orlando": [-81.3792, 28.5383], "Tampa": [-82.4572, 27.9506], "Jacksonville": [-81.6557, 30.3322] }, facts: { "Tallahassee": "Located on the Red Hills, it was chosen as capital for being halfway between older ports.", "Miami": "A major center for international finance and the 'Gateway to the Americas'.", "Orlando": "World-famous tourism hub with an economy built on theme parks and hospitality.", "Tampa": "Major deep-water port on the Gulf of Mexico and center for the cigar industry.", "Jacksonville": "The largest US city by land area and a major military and logistics port." } },
             "GA": { name: "Georgia", region: "southeast", capital: "Atlanta", cities: { "Atlanta": [-84.3880, 33.7490], "Savannah": [-81.0998, 32.0809], "Augusta": [-81.9748, 33.4735], "Macon": [-83.6324, 32.8407], "Columbus": [-84.9901, 32.4610] }, facts: { "Atlanta": "International transport hub and the headquarters for many Fortune 500 companies.", "Savannah": "The first capital of Georgia, famous for its historic British-colonial layout.", "Augusta": "Strategic city on the Savannah River and host of the Masters golf tournament.", "Macon": "A center for music history and the heart of Georgia's agricultural region.", "Columbus": "Industrial city home to Fort Moore, one of the Army's largest training bases." } },
             "HI": { name: "Hawaii", region: "western", capital: "Honolulu", cities: { "Honolulu": [-157.8583, 21.3069], "Hilo": [-155.0844, 19.7297], "Kailua": [-157.7394, 21.4022], "Kapolei": [-158.0772, 21.3328], "Lihue": [-159.3711, 21.9811] }, facts: { "Honolulu": "Home to Iolani Palace, the only royal palace on US soil.", "Hilo": "Known for its proximity to active volcanoes and heavy tropical rainfall.", "Kailua": "A windward city famous for marine conservation and pristine beaches.", "Kapolei": "Designed as Oahu's 'Second City' to decentralize government from Honolulu.", "Lihue": "The administrative heart of the island of Kauai." } },
@@ -197,7 +206,7 @@
             "NH": { name: "New Hampshire", region: "northeast", capital: "Concord", cities: { "Concord": [-71.5376, 43.2081], "Manchester": [-71.4548, 42.9956], "Nashua": [-71.4676, 42.7654], "Derry": [-71.3273, 42.8806], "Portsmouth": [-70.7626, 43.0718] }, facts: { "Concord": "Known for the granite quarries that built many of the nation's monuments.", "Manchester": "Once home to the world's largest textile mill complex during the Industrial Revolution.", "Nashua": "Historically driven by the textile and paper industries on the Merrimack River.", "Derry": "Birthplace of Alan Shepard, the first American in space.", "Portsmouth": "Strategic colonial port and home to the first US naval shipyard." } },
             "NJ": { name: "New Jersey", region: "northeast", capital: "Trenton", cities: { "Trenton": [-74.7429, 40.2206], "Newark": [-74.1724, 40.7357], "Jersey City": [-74.0431, 40.7178], "Paterson": [-74.1718, 40.9168], "Atlantic City": [-74.4229, 39.3643] }, facts: { "Trenton": "Site of George Washington's critical 1776 victory after crossing the Delaware River.", "Newark": "Major global transportation hub and home to the nation's largest insurance companies.", "Jersey City": "A diverse historic gateway for immigrants arriving at nearby Ellis Island.", "Paterson": "The nation's first planned industrial city, known for its silk and textile production.", "Atlantic City": "Famous for the world's first boardwalk and as the setting for the game Monopoly." } },
             "NM": { name: "New Mexico", region: "southwest", capital: "Santa Fe", cities: { "Santa Fe": [-105.9378, 35.6870], "Albuquerque": [-106.6056, 35.0844], "Las Cruces": [-106.7785, 32.3199], "Rio Rancho": [-106.6622, 35.2328], "Roswell": [-104.5230, 33.3943] }, facts: { "Santa Fe": "Established in 1610, it is the oldest state capital in the United States.", "Albuquerque": "Strategic high-altitude center for aerospace and nuclear physics research.", "Las Cruces": "Located in the Mesilla Valley and home to White Sands Missile Range research.", "Rio Rancho": "A fast-growing technological hub and corporate service center for the Southwest.", "Roswell": "A historically significant military and ranching center in the Pecos River Valley." } },
-            "NY": { name: "New York", region: "northeast", capital: "Albany", cities: { "Albany": [-73.7562, 42.6526], "New York City": [-74.0060, 40.7128], "Buffalo": [-78.8784, 42.8864], "Rochester": [-77.6109, 43.1610], "Syracuse": [-76.1474, 43.0481] }, facts: { "Albany": "One of the oldest surviving settlements in the original 13 colonies.", "New York City": "Global capital for finance and the headquarters of the United Nations.", "Buffalo": "Terminus of the Erie Canal, which connected the Great Lakes to the Atlantic Ocean.", "Rochester": "Known as the 'Image Capital of the World' for its history in optics and photography.", "Syracuse": "An industrial crossroads known historically as the 'Salt City'." } },
+            "NY": { name: "New York", region: "northeast", capital: "Albany", cities: { "Albany": [-73.7562, 42.6526], "New York City": [-74.0060, 40.7128], "Buffalo": [-78.8784, 42.8864], "Rochester": [-77.6109, 43.1610], "Syracuse": [-76.1474, 43.0481] }, facts: { "Albany": "One of the oldest surviving colonial settlements, built as a strategic Hudson River fur-trading post.", "New York City": "Global capital for finance and the headquarters of the United Nations.", "Buffalo": "Terminus of the Erie Canal, which connected the Great Lakes to the Atlantic Ocean.", "Rochester": "Known as the 'Image Capital of the World' for its history in optics and photography.", "Syracuse": "An industrial crossroads known historically as the 'Salt City'." } },
             "NC": { name: "North Carolina", region: "southeast", capital: "Raleigh", cities: { "Raleigh": [-78.6382, 35.7796], "Charlotte": [-80.8431, 35.2271], "Greensboro": [-79.7920, 36.0726], "Durham": [-78.8986, 35.9940], "Winston-Salem": [-80.2442, 36.0999] }, facts: { "Raleigh": "The 'City of Oaks' and a key part of the Research Triangle tech region.", "Charlotte": "The largest city in the state and the second-largest financial center in the US.", "Greensboro": "Site of major Revolutionary War battles and Civil Rights milestones.", "Durham": "A leading medical research center known as the 'City of Medicine'.", "Winston-Salem": "The historic heart of the American tobacco and textile manufacturing industry." } },
             "ND": { name: "North Dakota", region: "midwest", capital: "Bismarck", cities: { "Bismarck": [-100.7837, 46.8083], "Fargo": [-96.7898, 46.8772], "Grand Forks": [-97.0329, 47.9253], "Minot": [-101.2963, 48.2325], "Williston": [-103.6256, 48.1470] }, facts: { "Bismarck": "Founded in 1872 on the Missouri River as a gateway to the Northern Frontier.", "Fargo": "The state's largest city and a major hub for retail and food science research.", "Grand Forks": "Home to one of the world's leading centers for aerospace and unmanned aircraft research.", "Minot": "A strategic logistics hub and host of a major US nuclear defense base.", "Williston": "The primary center for the Bakken oil boom and Western North Dakota's energy sector." } },
             "OH": { name: "Ohio", region: "midwest", capital: "Columbus", cities: { "Columbus": [-82.9988, 39.9612], "Cleveland": [-81.6944, 41.4993], "Cincinnati": [-84.5120, 39.1031], "Toledo": [-83.5552, 41.6528], "Akron": [-81.5190, 41.0814] }, facts: { "Columbus": "A fast-growing educational and logistics center in the heart of the Midwest.", "Cleveland": "Major manufacturing city and home to one of the world's top medical centers.", "Cincinnati": "Historic river city that was the first major US city founded after the Revolution.", "Toledo": "Known as the 'Glass City' due to its long history as a glass-manufacturing powerhouse.", "Akron": "Known as the 'Rubber Capital of the World' for its history in tire manufacturing." } },
@@ -218,12 +227,12 @@
             "WY": { name: "Wyoming", region: "western", capital: "Cheyenne", cities: { "Cheyenne": [-104.8202, 41.1400], "Casper": [-106.3252, 42.8666], "Laramie": [-105.5911, 41.3114], "Gillette": [-105.5022, 44.2911], "Rock Springs": [-109.2321, 41.5875] }, facts: { "Cheyenne": "Strategic rail city and center for the nation's wind-energy research.", "Casper": "Historic center for the western energy and oil refining industries.", "Laramie": "The only city in the state with a university, a major research center.", "Gillette": "Known as the 'Energy Capital of the Nation' for its vast coal deposits.", "Rock Springs": "Grew as a massive multicultural labor hub during the mining boom." } }
         };
 
-        // UI Logic Variables
         let svg, g, zoom, projection, path;
         let width, height;
         let currentTargetAbbr = "";
         let currentPhase = "MAP_SELECTION"; 
         let score = 0;
+        let cityStrikes = 0;
         let visited = new Set();
         let currentScale = 1;
 
@@ -278,6 +287,7 @@
             visited.add(currentTargetAbbr);
             
             currentPhase = "MAP_SELECTION";
+            cityStrikes = 0;
             resetZoom();
             d3.selectAll(".state").classed("active-focused", false);
             d3.selectAll(".city-node").remove();
@@ -294,12 +304,12 @@
             const clickedAbbr = clickedId ? clickedId.replace("state-", "") : null;
 
             if (clickedAbbr === currentTargetAbbr) {
-                score += 10; // +10 for correct state
+                score += 10; 
                 updateScoreUI();
                 flashState(this, "correct");
                 transitionToCityPhase(d, clickedAbbr);
             } else {
-                score -= 10; // -10 for wrong state
+                score -= 10; 
                 updateScoreUI();
                 flashState(this, "wrong");
                 const wrongName = gameData[clickedAbbr] ? gameData[clickedAbbr].name : "unknown territory";
@@ -341,13 +351,14 @@
 
             if (isCorrect) {
                 dot.classed("correct-choice", true);
-                score += 10; // +10 for correct capital
+                score += 10; 
                 updateScoreUI();
                 showFact(cityNode.name, abbr, "CORRECT", "status-correct");
             } else {
                 dot.classed("wrong-choice", true);
-                score -= 10; // -10 for wrong city
+                score -= 10; 
                 updateScoreUI();
+                cityStrikes++;
                 showFact(cityNode.name, abbr, "NOT THE CAPITAL", "status-wrong");
             }
         }
@@ -364,7 +375,7 @@
             let factText = data.facts[cityName] || "No data available for this sector.";
             document.getElementById("fact-text").innerHTML = factText;
 
-            btn.innerText = (status === "CORRECT") ? "Next Mission" : "Keep Searching";
+            btn.innerText = (status === "CORRECT") ? "Next Mission" : "Try Again";
             btn.onclick = (status === "CORRECT") ? resetGameRound : () => overlay.classList.remove("show");
 
             overlay.classList.add("show");
