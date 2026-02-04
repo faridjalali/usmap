@@ -106,7 +106,7 @@ body {
 .city-node:hover {
   fill: #fff;
   stroke: var(--neon-blue);
-  stroke-width: 8px;
+  stroke-width: 4px;
 }
 .city-node.wrong-choice {
   fill: var(--neon-pink);
