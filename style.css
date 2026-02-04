@@ -98,8 +98,7 @@ body {
 
 .city-node {
   fill: var(--neon-blue);
-  stroke: rgba(0, 243, 255, 0.2);
-  stroke-width: 5px;
+  stroke: none;
   cursor: pointer;
   transition: all 0.3s;
   pointer-events: none;

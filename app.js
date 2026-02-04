@@ -28,8 +28,7 @@ async function initGame() {
       g.attr("transform", e.transform);
       currentScale = e.transform.k;
       d3.selectAll(".city-node")
-        .attr("r", 6 / currentScale)
-        .attr("stroke-width", 2 / currentScale);
+        .attr("r", 6 / currentScale);
     });
   svg.call(zoom);
 
