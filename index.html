@@ -246,13 +246,21 @@
       }
       #sub-prompt {
         font-size: 1.1rem;
-        color: var(--neon-blue);
-        margin-top: 8px;
+        color: black;
+        background: white;
+        padding: 10px 30px;
+        border-radius: 50px;
+        margin-top: 15px;
         letter-spacing: 1px;
+        display: inline-block;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        transition: opacity 0.3s;
+        opacity: 0;
       }
+      #sub-prompt:not(:empty) { opacity: 1; }
 
       .wrong-state-highlight {
-        color: var(--neon-amber);
+        color: black;
         font-weight: 800;
       }
 
