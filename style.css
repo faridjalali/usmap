@@ -111,12 +111,14 @@ body {
 .city-node.wrong-choice {
   fill: var(--neon-pink);
   stroke: var(--neon-pink);
-  pointer-events: none;
+  /* pointer-events: none; Removed to allow hover tooltip */
+  cursor: default;
   opacity: 0.6;
 }
 .city-node.correct-choice {
   fill: var(--neon-green);
   stroke: var(--neon-green);
+  cursor: default;
 }
 
 #ui-layer {

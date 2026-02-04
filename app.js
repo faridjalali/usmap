@@ -209,6 +209,8 @@ function handleCityClick(event, cityNode, abbr) {
   const isCorrect = cityNode.name === targetCityName;
   const dot = d3.select(event.currentTarget);
 
+  if (dot.classed("wrong-choice") || dot.classed("correct-choice")) return;
+
   if (isCorrect) {
     dot.classed("correct-choice", true);
     score += 10;
