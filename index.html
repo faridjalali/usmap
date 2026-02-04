@@ -257,7 +257,7 @@
         transition: opacity 0.3s;
         opacity: 0;
       }
-      #sub-prompt:not(:empty) { opacity: 1; }
+      #sub-prompt.visible { opacity: 1; }
 
       .wrong-state-highlight {
         color: black;
@@ -409,6 +409,7 @@
       let isCapitalMode = true;
       let targetCityName = "";
       let feedbackTimeout;
+      let clearTextTimeout;
 
       window.onload = initGame;
 
@@ -544,9 +545,15 @@
           document.getElementById("main-prompt").innerHTML = `${targetName}`;
           
           clearTimeout(feedbackTimeout);
+          clearTimeout(clearTextTimeout);
           const subPrompt = document.getElementById("sub-prompt");
           subPrompt.innerHTML = `That is <span class="wrong-state-highlight">${wrongName}</span>`;
-          feedbackTimeout = setTimeout(() => { subPrompt.innerHTML = ""; }, 3000);
+          subPrompt.classList.add("visible");
+          
+          feedbackTimeout = setTimeout(() => { 
+            subPrompt.classList.remove("visible");
+            clearTextTimeout = setTimeout(() => { subPrompt.innerHTML = ""; }, 300);
+          }, 3000);
         }
       }
 
