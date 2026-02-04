@@ -450,15 +450,17 @@
             .enter()
             .append("path")
             .attr("d", path)
-            .attr("class", (d) => {
-              const abbr = nameToAbbr[d.properties.name];
-              const region = gameData[abbr] ? gameData[abbr].region : "unknown";
-              return `state reg-${region}`;
-            })
-            .attr("id", (d) => {
-              const abbr = nameToAbbr[d.properties.name];
-              return abbr ? `state-${abbr}` : null;
-            })
+            .attr("class", d => {
+                        if (d.properties.name === "District of Columbia") return "state reg-northeast";
+                        const abbr = nameToAbbr[d.properties.name];
+                        const region = gameData[abbr] ? gameData[abbr].region : "unknown";
+                        return `state reg-${region}`;
+                    })
+                    .attr("id", d => {
+                        if (d.properties.name === "District of Columbia") return "state-DC";
+                        const abbr = nameToAbbr[d.properties.name];
+                        return abbr ? `state-${abbr}` : null;
+                    })
             .on("click", handleStateClick);
 
           startRound();
@@ -524,9 +526,10 @@
           score -= 10;
           updateScoreUI();
           flashState(this, "wrong");
-          const wrongName = gameData[clickedAbbr]
+          let wrongName = gameData[clickedAbbr]
             ? gameData[clickedAbbr].name
             : "unknown territory";
+          if (clickedAbbr === "DC") wrongName = "Washington DC";
           const targetName = gameData[currentTargetAbbr].name;
           document.getElementById("find-label").innerText = "Find";
           document.getElementById("main-prompt").innerHTML = `${targetName}`;
