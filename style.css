@@ -42,6 +42,8 @@ body {
     fill 0.3s,
     opacity 0.3s;
   vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 .reg-southwest {
   fill: var(--c-southwest);
@@ -66,7 +68,7 @@ body {
 .state.active-focused {
   opacity: 1;
   stroke: black;
-  stroke-width: 4px;
+  stroke-width: 3px;
 }
 
 .state.correct-flash {
