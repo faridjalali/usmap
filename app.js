@@ -4,6 +4,7 @@ let currentTargetAbbr = "";
 let currentPhase = "MAP_SELECTION";
 let score = 0;
 let visited = new Set();
+let clickedCities = new Set();
 let currentScale = 1;
 let isCapitalMode = true;
 let targetCityName = "";
@@ -154,7 +155,9 @@ function handleStateClick(event, d) {
 function transitionToCityPhase(geoData, abbr) {
   currentPhase = "CITY_SELECTION";
   zoomToState(geoData);
-  d3.select(`#state-${abbr}`).classed("active-focused", true);
+  d3.select(`#state-${abbr}`).classed("active-focused", true).raise();
+  
+  clickedCities.clear();
 
   const data = gameData[abbr];
   document.getElementById("find-label").innerText = "Find";
@@ -209,7 +212,8 @@ function handleCityClick(event, cityNode, abbr) {
   const isCorrect = cityNode.name === targetCityName;
   const dot = d3.select(event.currentTarget);
 
-  if (dot.classed("wrong-choice") || dot.classed("correct-choice")) return;
+  if (clickedCities.has(cityNode.name)) return;
+  clickedCities.add(cityNode.name);
 
   if (isCorrect) {
     dot.classed("correct-choice", true);
