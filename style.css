@@ -68,7 +68,7 @@ body {
 .state.active-focused {
   opacity: 1;
   stroke: black;
-  stroke-width: 3px;
+  stroke-width: 1.5px;
 }
 
 .state.correct-flash {
