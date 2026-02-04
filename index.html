@@ -408,6 +408,7 @@
       let currentScale = 1;
       let isCapitalMode = true;
       let targetCityName = "";
+      let feedbackTimeout;
 
       window.onload = initGame;
 
@@ -541,8 +542,11 @@
           const targetName = gameData[currentTargetAbbr].name;
           document.getElementById("find-label").innerText = "Find";
           document.getElementById("main-prompt").innerHTML = `${targetName}`;
-          document.getElementById("sub-prompt").innerHTML =
-            `That is <span class="wrong-state-highlight">${wrongName}</span>`;
+          
+          clearTimeout(feedbackTimeout);
+          const subPrompt = document.getElementById("sub-prompt");
+          subPrompt.innerHTML = `That is <span class="wrong-state-highlight">${wrongName}</span>`;
+          feedbackTimeout = setTimeout(() => { subPrompt.innerHTML = ""; }, 3000);
         }
       }
 
